@@ -14,7 +14,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
             <div className="min-w-0">
               <p className="text-sm font-bold text-white leading-tight tracking-tight">
-                デンタルキャリア
+                ブルージョブズ
               </p>
               <p className="text-xs text-orange-400 mt-0.5 font-medium">管理者画面</p>
             </div>

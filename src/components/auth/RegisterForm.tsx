@@ -1,8 +1,10 @@
 'use client'
 
+import { useActionState } from 'react'
 import { useState } from 'react'
 import Link from 'next/link'
 import type { Qualification } from '@/lib/types/seeker'
+import { registerAction } from '@/app/actions/auth'
 
 type Step = 1 | 2 | 3
 
@@ -77,8 +79,8 @@ function StepIndicator({ current }: { current: Step }) {
 }
 
 export default function RegisterForm() {
+  const [state, action, isPending] = useActionState(registerAction, {})
   const [step, setStep] = useState<Step>(1)
-  const [submitted, setSubmitted] = useState(false)
 
   // Step 1 fields
   const [name, setName] = useState('')
@@ -93,8 +95,6 @@ export default function RegisterForm() {
 
   // Step 3 fields
   const [employmentTypes, setEmploymentTypes] = useState<string[]>([])
-  const [desiredSalaryMin, setDesiredSalaryMin] = useState('')
-  const [bio, setBio] = useState('')
   const [agreed, setAgreed] = useState(false)
 
   function toggleQualification(q: Qualification) {
@@ -109,42 +109,18 @@ export default function RegisterForm() {
     )
   }
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    console.log('新規登録:', {
-      name, email, password, prefecture,
-      qualifications, experienceYears,
-      employmentTypes, desiredSalaryMin, bio, agreed,
-    })
-    setSubmitted(true)
-  }
-
-  if (submitted) {
-    return (
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 text-center">
-        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <svg className="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-          </svg>
-        </div>
-        <h2 className="text-xl font-bold text-gray-900 mb-2">登録完了！</h2>
-        <p className="text-gray-600 text-sm mb-6">アカウントが作成されました。求人を探してみましょう。</p>
-        <Link
-          href="/jobs"
-          className="inline-block px-6 py-3 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded-lg transition-colors"
-        >
-          求人を探す
-        </Link>
-      </div>
-    )
-  }
-
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
       <h1 className="text-2xl font-bold text-gray-900 mb-2 text-center">無料会員登録</h1>
       <p className="text-sm text-gray-500 text-center mb-6">歯科業界の転職・就職をサポートします</p>
 
       <StepIndicator current={step} />
+
+      {state.error && (
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+          {state.error}
+        </div>
+      )}
 
       {step === 1 && (
         <form
@@ -177,6 +153,7 @@ export default function RegisterForm() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              autoComplete="email"
               className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition"
             />
           </div>
@@ -194,6 +171,7 @@ export default function RegisterForm() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={8}
+                autoComplete="new-password"
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition pr-11"
               />
               <button
@@ -301,7 +279,17 @@ export default function RegisterForm() {
       )}
 
       {step === 3 && (
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form action={action} className="space-y-5">
+          {/* Hidden fields carrying data from steps 1 & 2 */}
+          <input type="hidden" name="name" value={name} />
+          <input type="hidden" name="email" value={email} />
+          <input type="hidden" name="password" value={password} />
+          <input type="hidden" name="prefecture" value={prefecture} />
+          <input type="hidden" name="experienceYears" value={experienceYears} />
+          {qualifications.map((q) => (
+            <input key={q} type="hidden" name="qualifications" value={q} />
+          ))}
+
           <div>
             <p className="block text-sm font-medium text-gray-700 mb-2">
               希望雇用形態 <span className="text-gray-400 font-normal">（複数選択可）</span>
@@ -311,6 +299,8 @@ export default function RegisterForm() {
                 <label key={t} className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
+                    name="employmentTypes"
+                    value={t}
                     checked={employmentTypes.includes(t)}
                     onChange={() => toggleEmploymentType(t)}
                     className="w-4 h-4 rounded border-gray-300 text-cyan-600 focus:ring-cyan-500"
@@ -328,10 +318,9 @@ export default function RegisterForm() {
             <div className="relative">
               <input
                 id="salary-min"
+                name="desiredSalaryMin"
                 type="number"
                 placeholder="200000"
-                value={desiredSalaryMin}
-                onChange={(e) => setDesiredSalaryMin(e.target.value)}
                 min={0}
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition pr-12"
               />
@@ -345,9 +334,8 @@ export default function RegisterForm() {
             </label>
             <textarea
               id="bio"
+              name="bio"
               placeholder="経験やアピールポイントを自由にご記入ください"
-              value={bio}
-              onChange={(e) => setBio(e.target.value)}
               rows={3}
               className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition resize-none"
             />
@@ -379,10 +367,10 @@ export default function RegisterForm() {
             </button>
             <button
               type="submit"
-              disabled={!agreed}
+              disabled={!agreed || isPending}
               className="flex-1 py-3 bg-cyan-600 hover:bg-cyan-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors"
             >
-              登録する
+              {isPending ? '登録中...' : '登録する'}
             </button>
           </div>
         </form>

@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 
 const jobseekerLinks = [
   { href: '/jobs', label: '求人を探す' },
@@ -25,11 +26,14 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand column */}
           <div className="md:col-span-1">
-            <Link href="/" className="flex items-center gap-2 mb-3">
-              <span className="text-2xl" aria-hidden="true">🦷</span>
-              <span className="text-lg font-bold text-cyan-400 tracking-tight">
-                デンタルキャリア
-              </span>
+            <Link href="/" className="flex items-center mb-3">
+              <Image
+                src="/bluejobs-logo.png"
+                alt="ブルージョブズ"
+                width={140}
+                height={38}
+                className="h-8 w-auto object-contain brightness-0 invert"
+              />
             </Link>
             <p className="text-sm text-gray-400 leading-relaxed">
               歯科業界の求職・採用をもっと簡単に
@@ -95,10 +99,18 @@ export default function Footer() {
         </div>
 
         {/* Copyright */}
-        <div className="mt-10 pt-8 border-t border-gray-800 text-center">
+        <div className="mt-10 pt-8 border-t border-gray-800 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-sm text-gray-500">
-            © 2025 デンタルキャリア All Rights Reserved.
+            © 2025 ブルージョブズ株式会社 All Rights Reserved.
           </p>
+          <a
+            href="https://corp.bluejobs.net/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-gray-600 hover:text-cyan-400 transition-colors"
+          >
+            corp.bluejobs.net
+          </a>
         </div>
       </div>
     </footer>

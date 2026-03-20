@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 
 interface ApplyButtonProps {
   jobId: string
@@ -40,7 +41,7 @@ export default function ApplyButton({ jobId: _jobId, jobTitle }: ApplyButtonProp
       </button>
 
       {/* Confirmation modal */}
-      {showModal && (
+      {showModal && createPortal(
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
           onClick={(e) => { if (e.target === e.currentTarget) setShowModal(false) }}
@@ -79,7 +80,7 @@ export default function ApplyButton({ jobId: _jobId, jobTitle }: ApplyButtonProp
             </div>
           </div>
         </div>
-      )}
+      , document.body)}
     </>
   )
 }

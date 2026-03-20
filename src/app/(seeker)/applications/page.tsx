@@ -5,7 +5,7 @@ import type { ApplicationStatus } from '@/lib/types/application'
 import Badge, { getApplicationStatusVariant } from '@/components/ui/Badge'
 
 export const metadata: Metadata = {
-  title: '応募管理 | デンタルキャリア',
+  title: '応募管理 | ブルージョブズ',
   description: '応募した求人の状況を確認・管理できます。',
 }
 

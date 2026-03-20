@@ -3,7 +3,7 @@ import type { SeekerProfile } from '@/lib/types/seeker'
 import ProfileEditForm from '@/components/profile/ProfileEditForm'
 
 export const metadata: Metadata = {
-  title: 'マイプロフィール | デンタルキャリア',
+  title: 'マイプロフィール | ブルージョブズ',
   description: 'プロフィールを管理して、より良い求人にマッチングしましょう。',
 }
 

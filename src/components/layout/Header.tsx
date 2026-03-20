@@ -1,5 +1,9 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import NavLinks from './NavLinks'
+import { getSession } from '@/lib/auth'
+import { findUserById } from '@/lib/auth/store'
+import { logoutAction } from '@/app/actions/auth'
 
 const navLinks = [
   { href: '/jobs', label: '求人を探す' },
@@ -7,17 +11,24 @@ const navLinks = [
   { href: '/community', label: 'コミュニティ' },
 ]
 
-export default function Header() {
+export default async function Header() {
+  const session = await getSession()
+  const user = session ? findUserById(session.userId) : null
+
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 shrink-0">
-            <span className="text-2xl" aria-hidden="true">🦷</span>
-            <span className="text-xl font-bold text-cyan-600 tracking-tight">
-              デンタルキャリア
-            </span>
+          <Link href="/" className="flex items-center shrink-0">
+            <Image
+              src="/bluejobs-logo.png"
+              alt="ブルージョブズ"
+              width={160}
+              height={44}
+              priority
+              className="h-9 w-auto object-contain"
+            />
           </Link>
 
           {/* Desktop nav */}
@@ -27,18 +38,39 @@ export default function Header() {
 
           {/* Auth buttons */}
           <div className="hidden md:flex items-center gap-3">
-            <Link
-              href="/login"
-              className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-cyan-600 transition-colors"
-            >
-              ログイン
-            </Link>
-            <Link
-              href="/register"
-              className="px-4 py-2 text-sm font-medium text-white bg-cyan-600 hover:bg-cyan-700 rounded-lg transition-colors"
-            >
-              無料登録
-            </Link>
+            {user ? (
+              <>
+                <Link
+                  href="/profile"
+                  className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-cyan-600 transition-colors"
+                >
+                  {user.name}
+                </Link>
+                <form action={logoutAction}>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-red-600 transition-colors"
+                  >
+                    ログアウト
+                  </button>
+                </form>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-cyan-600 transition-colors"
+                >
+                  ログイン
+                </Link>
+                <Link
+                  href="/register"
+                  className="px-4 py-2 text-sm font-medium text-white bg-cyan-600 hover:bg-cyan-700 rounded-lg transition-colors"
+                >
+                  無料登録
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile hamburger */}
@@ -50,7 +82,6 @@ export default function Header() {
 }
 
 function MobileMenu() {
-  // Static server-rendered hamburger icon; interactivity can be added via a client component if needed
   return (
     <button
       type="button"

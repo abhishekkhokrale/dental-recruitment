@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: '404 ページが見つかりません | デンタルキャリア',
+  title: '404 ページが見つかりません | ブルージョブズ',
 }
 
 export default function NotFound() {

@@ -2,17 +2,34 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #202020;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-primary: #0891b2;
-  --color-primary-dark: #0e7490;
-  --color-primary-light: #cffafe;
-  --color-accent: #f97316;
-  --font-sans: "Geist", "Hiragino Kaku Gothic ProN", "Hiragino Sans", "BIZ UDPGothic", Meiryo, sans-serif;
+
+  /* ── BlueJobs brand: override the cyan palette ────────────────── */
+  --color-cyan-50:  #eaf5fb;
+  --color-cyan-100: #d5ecf8;
+  --color-cyan-200: #aad8f0;
+  --color-cyan-300: #7fc4e8;
+  --color-cyan-400: #55b0e0;
+  --color-cyan-500: #2ca9e1;
+  --color-cyan-600: #2ca9e1;   /* primary  */
+  --color-cyan-700: #1d8fc0;   /* hover    */
+  --color-cyan-800: #19448e;   /* dark navy */
+  --color-cyan-900: #102e66;
+
+  /* ── BlueJobs green accent: override orange palette ───────────── */
+  --color-orange-400: #89cf4a;
+  --color-orange-500: #6eb92b;  /* accent   */
+  --color-orange-600: #5a9a22;  /* hover    */
+
+  /* ── Fonts ────────────────────────────────────────────────────── */
+  --font-sans: var(--font-noto-sans-jp), "Noto Sans JP",
+    "Hiragino Kaku Gothic ProN", "Hiragino Sans",
+    "BIZ UDPGothic", Meiryo, sans-serif;
   --font-mono: var(--font-geist-mono);
 }
 

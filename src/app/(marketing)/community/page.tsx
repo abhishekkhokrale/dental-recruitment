@@ -5,7 +5,7 @@ import PostCard from '@/components/community/PostCard'
 import NewPostModal from '@/components/community/NewPostModal'
 
 export const metadata: Metadata = {
-  title: '歯科コミュニティ | デンタルキャリア',
+  title: '歯科コミュニティ | ブルージョブズ',
   description:
     '歯科衛生士・歯科医師・歯科助手・歯科技工士のためのコミュニティ。職場環境・給与・転職・スキルアップについて情報交換しましょう。',
 }
