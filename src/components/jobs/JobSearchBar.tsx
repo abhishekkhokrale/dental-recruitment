@@ -33,6 +33,8 @@ export default function JobSearchBar() {
 
   return (
     <form
+      action="/jobs"
+      method="GET"
       onSubmit={handleSubmit}
       className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-white rounded-full shadow-md px-3 py-2"
     >
@@ -54,9 +56,11 @@ export default function JobSearchBar() {
         </svg>
         <input
           type="text"
+          name="q"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="職種・キーワードを入力"
+          autoComplete="off"
           className="w-full bg-transparent text-sm text-gray-800 placeholder-gray-400 outline-none"
         />
       </div>
@@ -86,6 +90,7 @@ export default function JobSearchBar() {
           />
         </svg>
         <select
+          name="prefecture"
           value={prefecture}
           onChange={(e) => setPrefecture(e.target.value)}
           className="w-full bg-transparent text-sm text-gray-800 outline-none cursor-pointer"
