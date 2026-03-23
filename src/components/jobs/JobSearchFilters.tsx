@@ -136,15 +136,21 @@ export default function JobSearchFilters() {
 
       {/* Salary range */}
       <section>
-        <h3 className="text-sm font-medium text-gray-700 mb-3">月給の目安</h3>
+        <h3 className="text-sm font-medium text-gray-700 mb-1">月給の目安</h3>
+        <p className="text-xs text-gray-400 mb-3">月給制の求人に適用されます</p>
         <div className="space-y-3">
-          <div className="flex justify-between text-xs text-gray-500">
-            <span>{toWanLabel(salaryMin)}</span>
-            <span>{toWanLabel(salaryMax)}</span>
+          {/* Selected range badge */}
+          <div className="flex items-center justify-between bg-cyan-50 rounded-lg px-3 py-2">
+            <span className="text-xs font-medium text-cyan-700">{toWanLabel(salaryMin)}</span>
+            <span className="text-xs text-cyan-400 mx-1">〜</span>
+            <span className="text-xs font-medium text-cyan-700">{toWanLabel(salaryMax)}</span>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-3">
             <div>
-              <label className="text-xs text-gray-500 mb-1 block">最低</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-xs text-gray-500">下限（最低月給）</label>
+                <span className="text-xs font-medium text-gray-700">{toWanLabel(salaryMin)}</span>
+              </div>
               <input
                 type="range"
                 min={SALARY_MIN}
@@ -159,7 +165,10 @@ export default function JobSearchFilters() {
               />
             </div>
             <div>
-              <label className="text-xs text-gray-500 mb-1 block">最高</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-xs text-gray-500">上限（最高月給）</label>
+                <span className="text-xs font-medium text-gray-700">{toWanLabel(salaryMax)}</span>
+              </div>
               <input
                 type="range"
                 min={SALARY_MIN}
@@ -174,9 +183,10 @@ export default function JobSearchFilters() {
               />
             </div>
           </div>
-          <p className="text-xs text-gray-400 text-center">
-            {toWanLabel(SALARY_MIN)} 〜 {toWanLabel(SALARY_MAX)}
-          </p>
+          <div className="flex justify-between text-xs text-gray-400 px-0.5">
+            <span>{toWanLabel(SALARY_MIN)}</span>
+            <span>{toWanLabel(SALARY_MAX)}</span>
+          </div>
         </div>
       </section>
 

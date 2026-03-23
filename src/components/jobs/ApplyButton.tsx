@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 
 interface ApplyButtonProps {
@@ -11,6 +11,8 @@ interface ApplyButtonProps {
 export default function ApplyButton({ jobId: _jobId, jobTitle }: ApplyButtonProps) {
   const [applied, setApplied] = useState(false)
   const [showModal, setShowModal] = useState(false)
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
 
   if (applied) {
     return (
@@ -40,8 +42,8 @@ export default function ApplyButton({ jobId: _jobId, jobTitle }: ApplyButtonProp
         </svg>
       </button>
 
-      {/* Confirmation modal */}
-      {showModal && createPortal(
+      {/* Confirmation modal — only rendered after client mount to avoid hydration mismatch */}
+      {mounted && showModal && createPortal(
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
           onClick={(e) => { if (e.target === e.currentTarget) setShowModal(false) }}

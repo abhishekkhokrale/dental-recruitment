@@ -1,11 +1,16 @@
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import ClinicSidebarLinks from '@/components/clinic/ClinicSidebarLinks'
+import { getSessionUser } from '@/lib/auth'
+import { logoutAction } from '@/app/actions/auth'
 
-export default function ClinicLayout({
+export default async function ClinicLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const user = await getSessionUser()
+  if (!user || user.role !== 'clinic') redirect('/login')
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50">
       {/* Sidebar */}
@@ -18,7 +23,7 @@ export default function ClinicLayout({
             </div>
             <div className="min-w-0">
               <p className="text-sm font-semibold text-gray-900 truncate leading-tight">
-                スマイル歯科クリニック
+                {user.name}
               </p>
               <p className="text-xs text-gray-500 mt-0.5">管理者</p>
             </div>
@@ -61,6 +66,12 @@ export default function ClinicLayout({
             <span className="text-gray-700 font-medium">クリニック管理画面</span>
           </div>
           <div className="ml-auto flex items-center gap-3">
+            <span className="text-sm text-gray-600 hidden sm:inline">{user.name}</span>
+            <form action={logoutAction}>
+              <button type="submit" className="text-xs text-gray-500 hover:text-red-600 transition-colors px-2 py-1 rounded hover:bg-red-50">
+                ログアウト
+              </button>
+            </form>
             <div className="w-8 h-8 rounded-full bg-cyan-100 flex items-center justify-center text-sm font-semibold text-cyan-700">
               管
             </div>

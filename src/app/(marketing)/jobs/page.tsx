@@ -43,12 +43,18 @@ export default async function JobsPage({
     if (prefecture && job.prefecture !== prefecture) return false
     if (employmentFilter.length > 0 && !employmentFilter.includes(job.employmentType)) return false
     if (jobTypeFilter.length > 0 && !jobTypeFilter.includes(job.jobType)) return false
-    if (salaryMin !== null && job.salaryMax < salaryMin) return false
-    if (salaryMax !== null && job.salaryMin > salaryMax) return false
+    // Salary filter applies only to 月給 jobs; hourly jobs always pass through.
+    // Both job.salaryMin and job.salaryMax must fall within [filterMin, filterMax].
+    if (job.salaryType === '月給') {
+      if (salaryMin !== null && job.salaryMin < salaryMin) return false
+      if (salaryMax !== null && job.salaryMax > salaryMax) return false
+    }
     return true
   })
 
-  const hasFilters = q || prefecture || employmentFilter.length > 0 || jobTypeFilter.length > 0
+  const hasFilters =
+    q || prefecture || employmentFilter.length > 0 || jobTypeFilter.length > 0 ||
+    salaryMin !== null || salaryMax !== null
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -101,17 +107,17 @@ export default async function JobsPage({
             ) : (
               <div className="bg-white rounded-xl shadow-sm p-12 text-center">
                 <div className="text-5xl mb-4" aria-hidden="true">🦷</div>
-                <h2 className="text-lg font-semibold text-gray-900 mb-2">
-                  該当する求人が見つかりませんでした
-                </h2>
+                <p className="text-sm text-gray-700 mb-1">
+                  恐れ入りますが、該当する求人は見つかりませんでした。
+                </p>
                 <p className="text-sm text-gray-500 mb-6">
-                  検索条件を変更するか、絞り込みをリセットしてお試しください。
+                  検索条件を変更いただくか、絞り込みをリセットのうえ、再度お試しいただけますようお願いいたします。
                 </p>
                 <a
                   href="/jobs"
                   className="inline-flex items-center px-6 py-2 bg-cyan-600 hover:bg-cyan-700 text-white text-sm font-medium rounded-full transition-colors"
                 >
-                  すべての求人を見る
+                  絞り込みをリセット
                 </a>
               </div>
             )}

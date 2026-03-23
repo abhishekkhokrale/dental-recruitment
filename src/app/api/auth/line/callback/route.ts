@@ -57,6 +57,7 @@ export async function GET(request: NextRequest) {
         name: profile.displayName,
         email: `line_${profile.userId}@placeholder.invalid`,
         passwordHash: null,
+        role: 'seeker',
         prefecture: '',
         qualifications: [],
         experienceYears: 0,

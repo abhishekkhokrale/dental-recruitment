@@ -1,0 +1,23 @@
+[
+  {
+    "id": "admin-001",
+    "name": "管理者",
+    "email": "admin@bluejobs.jp",
+    "password": "admin1234",
+    "role": "admin"
+  },
+  {
+    "id": "clinic-001",
+    "name": "スマイル歯科クリニック",
+    "email": "clinic@bluejobs.jp",
+    "password": "clinic1234",
+    "role": "clinic"
+  },
+  {
+    "id": "seeker-001",
+    "name": "山田 花子",
+    "email": "seeker@bluejobs.jp",
+    "password": "seeker1234",
+    "role": "seeker"
+  }
+]

@@ -1,7 +1,12 @@
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import AdminSidebarLinks from '@/components/admin/AdminSidebarLinks'
+import { getSessionUser } from '@/lib/auth'
+import { logoutAction } from '@/app/actions/auth'
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  const user = await getSessionUser()
+  if (!user || user.role !== 'admin') redirect('/login')
   return (
     <div className="flex h-screen overflow-hidden bg-gray-950">
       {/* Sidebar */}
@@ -66,6 +71,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </svg>
               <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-orange-500" aria-hidden="true" />
             </button>
+            {/* Admin name */}
+            <span className="text-sm text-gray-600 hidden sm:inline">{user.name}</span>
+            {/* Logout */}
+            <form action={logoutAction}>
+              <button type="submit" className="text-xs text-gray-500 hover:text-red-600 transition-colors px-2 py-1 rounded hover:bg-red-50">
+                ログアウト
+              </button>
+            </form>
             {/* Admin avatar */}
             <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-xs font-bold text-orange-700">
               管
