@@ -4,6 +4,7 @@ import JobSearchBar from '@/components/jobs/JobSearchBar'
 import JobSearchFilters from '@/components/jobs/JobSearchFilters'
 import { mockJobs } from '@/lib/mock-data/jobs'
 import type { EmploymentType, JobType } from '@/lib/types/job'
+import AIJobMatchingPopup from '@/components/marketing/AIJobMatchingPopup'
 
 export default async function JobsPage({
   searchParams,
@@ -58,6 +59,7 @@ export default async function JobsPage({
 
   return (
     <div className="bg-gray-50 min-h-screen">
+      <AIJobMatchingPopup />
       {/* Page header */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">

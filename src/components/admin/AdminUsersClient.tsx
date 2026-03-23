@@ -142,8 +142,8 @@ export default function AdminUsersClient() {
 
       {/* Page heading */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">ユーザー管理</h1>
-        <p className="text-sm text-gray-500 mt-1">クリニック・求職者の登録ユーザーを管理します</p>
+        <h1 className="text-2xl font-bold text-gray-900">クリニック管理</h1>
+        {/* <p className="text-sm text-gray-500 mt-1">クリニック・求職者の登録ユーザーを管理します</p> */}
       </div>
 
       {/* Stats row */}
