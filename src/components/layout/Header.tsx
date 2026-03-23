@@ -7,7 +7,7 @@ import { logoutAction } from '@/app/actions/auth'
 
 const navLinks = [
   { href: '/jobs', label: '求人を探す' },
-  { href: '/clinic/dashboard', label: 'クリニックの方' },
+  // { href: '/clinic/dashboard', label: 'クリニックの方' },
   { href: '/community', label: 'コミュニティ' },
 ]
 

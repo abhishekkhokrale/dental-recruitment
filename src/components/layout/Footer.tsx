@@ -9,14 +9,14 @@ const jobseekerLinks = [
 
 const clinicLinks = [
   { href: '/clinic/dashboard', label: 'クリニック管理' },
-  { href: '/clinic/register', label: '掲載のお申し込み' },
-  { href: '/clinic/pricing', label: '料金プラン' },
+  { href: '#', label: '掲載のお申し込み' },
+  { href: '#', label: '料金プラン' },
 ]
 
 const legalLinks = [
-  { href: '/privacy', label: 'プライバシーポリシー' },
-  { href: '/terms', label: '利用規約' },
-  { href: '/contact', label: 'お問い合わせ' },
+  { href: '#', label: 'プライバシーポリシー' },
+  { href: '#', label: '利用規約' },
+  { href: '#', label: 'お問い合わせ' },
 ]
 
 export default function Footer() {
@@ -47,7 +47,7 @@ export default function Footer() {
             </h3>
             <ul className="space-y-2">
               {jobseekerLinks.map((link) => (
-                <li key={link.href}>
+                <li key={link.label}>
                   <Link
                     href={link.href}
                     className="text-sm text-gray-400 hover:text-cyan-400 transition-colors"
@@ -66,7 +66,7 @@ export default function Footer() {
             </h3>
             <ul className="space-y-2">
               {clinicLinks.map((link) => (
-                <li key={link.href}>
+                <li key={link.label}>
                   <Link
                     href={link.href}
                     className="text-sm text-gray-400 hover:text-cyan-400 transition-colors"
@@ -85,7 +85,7 @@ export default function Footer() {
             </h3>
             <ul className="space-y-2">
               {legalLinks.map((link) => (
-                <li key={link.href}>
+                <li key={link.label}>
                   <Link
                     href={link.href}
                     className="text-sm text-gray-400 hover:text-cyan-400 transition-colors"

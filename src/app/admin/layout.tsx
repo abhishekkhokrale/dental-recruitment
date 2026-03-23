@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import AdminSidebarLinks from '@/components/admin/AdminSidebarLinks'
 import { getSessionUser } from '@/lib/auth'
-import { logoutAction } from '@/app/actions/auth'
+import UserAvatarDropdown from '@/components/layout/UserAvatarDropdown'
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const user = await getSessionUser()
@@ -14,8 +14,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         {/* Brand */}
         <div className="px-5 py-5 border-b border-gray-800">
           <Link href="/admin" className="flex items-center gap-2.5 group">
-            <div className="w-8 h-8 rounded-lg bg-orange-600 flex items-center justify-center shrink-0 text-white text-sm font-bold shadow-sm">
-              管
+            <div className="w-8 h-8 rounded-lg bg-orange-600 flex items-center justify-center shrink-0 text-white shadow-sm">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" />
+              </svg>
             </div>
             <div className="min-w-0">
               <p className="text-sm font-bold text-white leading-tight tracking-tight">
@@ -73,16 +75,14 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             </button>
             {/* Admin name */}
             <span className="text-sm text-gray-600 hidden sm:inline">{user.name}</span>
-            {/* Logout */}
-            <form action={logoutAction}>
-              <button type="submit" className="text-xs text-gray-500 hover:text-red-600 transition-colors px-2 py-1 rounded hover:bg-red-50">
-                ログアウト
-              </button>
-            </form>
-            {/* Admin avatar */}
-            <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-xs font-bold text-orange-700">
-              管
-            </div>
+            {/* Admin avatar — click to open profile dropdown */}
+            <UserAvatarDropdown
+              name={user.name}
+              email={user.email}
+              initials={user.name.charAt(0)}
+              profileHref="/admin"
+              avatarClass="bg-orange-100 text-orange-700"
+            />
           </div>
         </header>
 

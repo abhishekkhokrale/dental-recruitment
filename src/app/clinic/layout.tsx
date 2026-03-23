@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import ClinicSidebarLinks from '@/components/clinic/ClinicSidebarLinks'
 import { getSessionUser } from '@/lib/auth'
-import { logoutAction } from '@/app/actions/auth'
+import UserAvatarDropdown from '@/components/layout/UserAvatarDropdown'
 
 export default async function ClinicLayout({
   children,
@@ -52,7 +52,7 @@ export default async function ClinicLayout({
         {/* Top bar */}
         <header className="h-14 bg-white border-b border-gray-200 flex items-center px-6 shrink-0 sticky top-0 z-10">
           <div className="flex items-center gap-2 text-sm text-gray-500 min-w-0">
-            <span className="text-gray-400">スマイル歯科クリニック</span>
+            <span className="text-gray-400">{user.name}</span>
             <svg
               className="w-4 h-4 shrink-0 text-gray-300"
               fill="none"
@@ -67,14 +67,13 @@ export default async function ClinicLayout({
           </div>
           <div className="ml-auto flex items-center gap-3">
             <span className="text-sm text-gray-600 hidden sm:inline">{user.name}</span>
-            <form action={logoutAction}>
-              <button type="submit" className="text-xs text-gray-500 hover:text-red-600 transition-colors px-2 py-1 rounded hover:bg-red-50">
-                ログアウト
-              </button>
-            </form>
-            <div className="w-8 h-8 rounded-full bg-cyan-100 flex items-center justify-center text-sm font-semibold text-cyan-700">
-              管
-            </div>
+            <UserAvatarDropdown
+              name={user.name}
+              email={user.email}
+              initials={user.name.charAt(0)}
+              profileHref="#"
+              avatarClass="bg-cyan-100 text-cyan-700"
+            />
           </div>
         </header>
 

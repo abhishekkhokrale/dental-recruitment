@@ -153,7 +153,7 @@ export default function AdminDashboardPage() {
               <span className="font-bold">7件</span>の求人が審査待ちです。
             </p>
             <Link
-              href="/admin/jobs"
+              href="#"
               className="text-xs text-amber-600 underline hover:no-underline mt-0.5 inline-block"
             >
               確認する →
@@ -177,7 +177,7 @@ export default function AdminDashboardPage() {
               <span className="font-bold">3件</span>のコンテンツが報告されています。
             </p>
             <Link
-              href="/admin/content"
+              href="#"
               className="text-xs text-rose-600 underline hover:no-underline mt-0.5 inline-block"
             >
               確認する →

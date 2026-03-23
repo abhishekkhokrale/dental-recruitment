@@ -4,11 +4,11 @@ import { useActionState } from 'react'
 import Link from 'next/link'
 import { loginAction } from '@/app/actions/auth'
 
-const DEMO = [
-  { label: '求職者',     email: 'seeker@bluejobs.jp', password: 'seeker1234', badge: 'bg-cyan-100 text-cyan-700'   },
-  { label: 'クリニック', email: 'clinic@bluejobs.jp', password: 'clinic1234', badge: 'bg-teal-100 text-teal-700'   },
-  { label: '管理者',     email: 'admin@bluejobs.jp',  password: 'admin1234',  badge: 'bg-orange-100 text-orange-700' },
-]
+// const DEMO = [
+//   { label: '求職者',     email: 'seeker@bluejobs.jp', password: 'seeker1234', badge: 'bg-cyan-100 text-cyan-700'   },
+//   { label: 'クリニック', email: 'clinic@bluejobs.jp', password: 'clinic1234', badge: 'bg-teal-100 text-teal-700'   },
+//   { label: '管理者',     email: 'admin@bluejobs.jp',  password: 'admin1234',  badge: 'bg-orange-100 text-orange-700' },
+// ]
 
 export default function LoginForm() {
   const [state, action, isPending] = useActionState(loginAction, {})
@@ -21,7 +21,7 @@ export default function LoginForm() {
       </p>
 
       {/* Demo accounts */}
-      <div className="mb-5 rounded-xl border border-gray-100 overflow-hidden divide-y divide-gray-100">
+      {/* <div className="mb-5 rounded-xl border border-gray-100 overflow-hidden divide-y divide-gray-100">
         {DEMO.map((d) => (
           <div key={d.label} className="flex items-center gap-3 px-3 py-2 bg-gray-50">
             <span className={`shrink-0 text-xs font-semibold px-2 py-0.5 rounded-full ${d.badge}`}>
@@ -31,7 +31,7 @@ export default function LoginForm() {
             <span className="text-xs text-gray-400 font-mono ml-auto shrink-0">{d.password}</span>
           </div>
         ))}
-      </div>
+      </div> */}
 
       {state.error && (
         <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">

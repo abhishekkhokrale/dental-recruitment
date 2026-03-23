@@ -3,6 +3,7 @@ import { Suspense } from 'react'
 import JobSearchBar from '@/components/jobs/JobSearchBar'
 import JobCard from '@/components/jobs/JobCard'
 import { mockJobs } from '@/lib/mock-data/jobs'
+import AIJobMatchingPopup from '@/components/marketing/AIJobMatchingPopup'
 
 const featuredJobs = mockJobs.slice(0, 6)
 
@@ -45,6 +46,7 @@ const features = [
 export default function HomePage() {
   return (
     <>
+      <AIJobMatchingPopup />
       {/* Hero Section */}
       <section className="bg-linear-to-br from-cyan-600 to-cyan-800 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">

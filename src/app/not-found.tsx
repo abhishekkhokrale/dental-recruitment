@@ -55,11 +55,11 @@ export default function NotFound() {
           {[
             { href: '/register', label: '無料会員登録' },
             { href: '/community', label: 'コミュニティ' },
-            { href: '/clinic/dashboard', label: 'クリニックの方' },
-            { href: '/contact', label: 'お問い合わせ' },
+            // { href: '/clinic/dashboard', label: 'クリニックの方' },
+            { href: '#', label: 'お問い合わせ' },
           ].map((link) => (
             <Link
-              key={link.href}
+              key={link.label}
               href={link.href}
               className="text-sm text-cyan-600 hover:text-cyan-700 hover:underline transition-colors"
             >

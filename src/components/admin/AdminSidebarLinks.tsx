@@ -24,7 +24,7 @@ const navItems = [
     ),
   },
   {
-    href: '/admin/jobs',
+    href: '#',
     label: '求人管理',
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" aria-hidden="true">
@@ -33,7 +33,7 @@ const navItems = [
     ),
   },
   {
-    href: '/admin/content',
+    href: '#',
     label: 'コンテンツ管理',
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" aria-hidden="true">
@@ -42,7 +42,7 @@ const navItems = [
     ),
   },
   {
-    href: '/admin/analytics',
+    href: '#',
     label: 'データ分析',
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" aria-hidden="true">
@@ -51,7 +51,7 @@ const navItems = [
     ),
   },
   {
-    href: '/admin/notices',
+    href: '#',
     label: 'お知らせ管理',
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" aria-hidden="true">
@@ -70,7 +70,7 @@ export default function AdminSidebarLinks() {
         {navItems.map((item) => {
           const isActive = item.exact ? pathname === item.href : pathname.startsWith(item.href)
           return (
-            <li key={item.href}>
+            <li key={item.label}>
               <Link
                 href={item.href}
                 className={[
