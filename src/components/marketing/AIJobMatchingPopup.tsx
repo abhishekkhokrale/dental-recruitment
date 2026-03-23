@@ -248,16 +248,23 @@ export default function AIJobMatchingPopup() {
                 </div>
 
                 {/* Speech bubble */}
-                <div className="relative flex-1 pb-2">
-                  <div className="bg-cyan-600 text-white rounded-2xl rounded-bl-none px-4 py-3 shadow-md">
+                <div className="relative flex-1">
+                  {/* Left-pointing tail (SVG — reliable across all browsers) */}
+                  <svg
+                    className="absolute left-0 top-4 -translate-x-full"
+                    width="12" height="16"
+                    viewBox="0 0 12 16"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true"
+                  >
+                    <path d="M12 0 L12 16 L0 8 Z" fill="#2ca9e1" />
+                  </svg>
+                  <div className="bg-cyan-600 text-white rounded-2xl px-4 py-3 shadow-md">
                     <p id="ai-popup-title" className="text-sm font-bold leading-snug">
-                      最適なお仕事をお探<br />しします？
+                      最適なお仕事をお探しします？
                     </p>
                   </div>
-                  {/* Tail */}
-                  <div className="absolute bottom-0 left-0 w-0 h-0
-                                  border-r-14 border-r-cyan-600
-                                  border-t-12 border-t-transparent" aria-hidden="true" />
                 </div>
               </div>
 
