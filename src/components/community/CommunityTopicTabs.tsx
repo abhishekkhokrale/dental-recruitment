@@ -16,7 +16,7 @@ export default function CommunityTopicTabs({ onTopicChange }: CommunityTopicTabs
   }
 
   return (
-    <div className="flex flex-wrap gap-2" role="tablist" aria-label="トピックフィルター">
+    <div className="flex flex-wrap gap-1.5" role="tablist" aria-label="トピックフィルター">
       {communityTopics.map((topic) => {
         const isActive = active === topic
         return (
@@ -27,10 +27,10 @@ export default function CommunityTopicTabs({ onTopicChange }: CommunityTopicTabs
             type="button"
             onClick={() => handleSelect(topic)}
             className={[
-              'px-4 py-2 rounded-full text-sm font-medium transition-all duration-150 border',
+              'px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-150',
               isActive
-                ? 'bg-cyan-600 text-white border-cyan-600 shadow-sm'
-                : 'bg-white text-gray-600 border-gray-200 hover:border-cyan-300 hover:text-cyan-600',
+                ? 'bg-gray-800 text-white'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200',
             ].join(' ')}
           >
             {topic}

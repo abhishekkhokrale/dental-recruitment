@@ -1,24 +1,11 @@
 import type { CommunityPost } from '@/lib/mock-data/community'
+import { PROFESSION_LABELS, PROFESSION_COLORS, EXPERIENCE_LABELS } from '@/lib/mock-data/community'
 import LikeButton from './LikeButton'
-
-const QUALIFICATION_COLORS: Record<string, string> = {
-  '歯科衛生士': 'bg-cyan-50 text-cyan-700',
-  '歯科医師': 'bg-indigo-50 text-indigo-700',
-  '歯科助手': 'bg-emerald-50 text-emerald-700',
-  '歯科技工士': 'bg-amber-50 text-amber-700',
-}
-
-const TOPIC_COLORS: Record<string, string> = {
-  '職場環境': 'bg-teal-50 text-teal-700',
-  '給与・待遇': 'bg-orange-50 text-orange-700',
-  '転職相談': 'bg-blue-50 text-blue-700',
-  'スキルアップ': 'bg-purple-50 text-purple-700',
-  'その他': 'bg-gray-100 text-gray-600',
-}
+import SaveButton from './SaveButton'
 
 function formatRelativeDate(isoString: string): string {
   const posted = new Date(isoString)
-  const now = new Date('2026-03-20T00:00:00Z')
+  const now = new Date('2026-03-25T00:00:00Z')
   const diffMs = now.getTime() - posted.getTime()
   const diffMins = Math.floor(diffMs / 60000)
   const diffHours = Math.floor(diffMins / 60)
@@ -30,49 +17,77 @@ function formatRelativeDate(isoString: string): string {
   return posted.toLocaleDateString('ja-JP', { month: 'long', day: 'numeric' })
 }
 
+const CONTENT_TYPE_CONFIG = {
+  post: { label: '投稿', color: 'bg-gray-100 text-gray-600', border: '' },
+  article: { label: '記事', color: 'bg-blue-50 text-blue-700', border: 'border-l-4 border-l-blue-400' },
+  question: { label: '質問', color: 'bg-amber-50 text-amber-700', border: 'border-l-4 border-l-amber-400' },
+  case: { label: 'ケース', color: 'bg-violet-50 text-violet-700', border: 'border-l-4 border-l-violet-500' },
+}
+
 interface PostCardProps {
   post: CommunityPost
 }
 
 export default function PostCard({ post }: PostCardProps) {
-  const qualificationColor =
-    QUALIFICATION_COLORS[post.authorQualification] ?? 'bg-gray-100 text-gray-600'
-  const topicColor = TOPIC_COLORS[post.topic] ?? 'bg-gray-100 text-gray-600'
-  const truncated = post.content.length > 150
-  const displayContent = truncated ? post.content.slice(0, 150) + '…' : post.content
+  const profColor = PROFESSION_COLORS[post.author.profession] ?? 'bg-gray-100 text-gray-600'
+  const typeConfig = CONTENT_TYPE_CONFIG[post.contentType]
+  const isLong = post.content.length > 200
+  const displayContent = isLong ? post.content.slice(0, 200) + '…' : post.content
 
   return (
-    <article className="bg-white shadow-sm rounded-xl p-5 hover:shadow-md transition-shadow duration-200">
-      {/* Author row */}
-      <div className="flex items-center justify-between mb-3">
+    <article
+      className={[
+        'bg-white shadow-sm rounded-xl p-5 hover:shadow-md transition-shadow duration-200',
+        typeConfig.border,
+      ].join(' ')}
+    >
+      {/* Header row */}
+      <div className="flex items-start justify-between gap-3 mb-3">
         <div className="flex items-center gap-2.5">
-          {/* Avatar placeholder */}
-          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-cyan-400 to-cyan-600 flex items-center justify-center shrink-0 text-white text-sm font-semibold">
-            {post.authorName.charAt(0)}
+          {/* Avatar */}
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-cyan-600 flex items-center justify-center shrink-0 text-white text-sm font-bold">
+            {post.author.name.charAt(0)}
           </div>
           <div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <span
-                className={`inline-block text-xs font-medium px-2 py-0.5 rounded-full ${qualificationColor}`}
-              >
-                {post.authorQualification}
-              </span>
-              <span className="text-sm font-semibold text-gray-800">{post.authorName}</span>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-sm font-semibold text-gray-900">{post.author.name}</span>
+              {post.author.specialty && (
+                <span className="text-xs text-gray-400">· {post.author.specialty}</span>
+              )}
             </div>
-            <p className="text-xs text-gray-400 mt-0.5">{formatRelativeDate(post.postedAt)}</p>
+            <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+              <span className={`inline-block text-xs font-medium px-2 py-0.5 rounded-full ${profColor}`}>
+                {PROFESSION_LABELS[post.author.profession]}
+              </span>
+              <span className="text-xs text-gray-400">
+                {EXPERIENCE_LABELS[post.author.experience]}
+              </span>
+              <span className="text-xs text-gray-300">·</span>
+              <span className="text-xs text-gray-400">{formatRelativeDate(post.postedAt)}</span>
+            </div>
           </div>
         </div>
-        <span
-          className={`text-xs font-medium px-2.5 py-1 rounded-full shrink-0 ${topicColor}`}
-        >
-          {post.topic}
+
+        {/* Type badge */}
+        <span className={`text-xs font-semibold px-2.5 py-1 rounded-full shrink-0 ${typeConfig.color}`}>
+          {post.contentType === 'case' && '🦷 '}
+          {post.contentType === 'article' && '📚 '}
+          {post.contentType === 'question' && '❓ '}
+          {typeConfig.label}
         </span>
       </div>
+
+      {/* Title (articles + cases) */}
+      {post.title && (
+        <h3 className="text-base font-bold text-gray-900 mb-2 leading-snug">
+          {post.title}
+        </h3>
+      )}
 
       {/* Content */}
       <p className="text-sm text-gray-700 leading-relaxed mb-3">
         {displayContent}
-        {truncated && (
+        {isLong && (
           <button
             type="button"
             className="ml-1 text-cyan-600 hover:text-cyan-700 font-medium text-xs transition-colors"
@@ -82,10 +97,35 @@ export default function PostCard({ post }: PostCardProps) {
         )}
       </p>
 
+      {/* Tags */}
+      {post.tags && post.tags.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mb-3">
+          {post.tags.slice(0, 4).map((tag) => (
+            <span
+              key={tag}
+              className="text-xs text-cyan-600 bg-cyan-50 px-2 py-0.5 rounded-full font-medium"
+            >
+              #{tag}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* Topic badge */}
+      <div className="mb-3">
+        <span className="text-xs text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full">
+          {post.topic}
+        </span>
+      </div>
+
       {/* Footer */}
       <div className="flex items-center gap-4 pt-3 border-t border-gray-100">
         <LikeButton initialCount={post.likeCount} initialLiked={post.isLiked} />
-        <div className="flex items-center gap-1.5 text-sm text-gray-400">
+
+        <button
+          type="button"
+          className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-cyan-500 transition-colors"
+        >
           <svg
             className="w-4 h-4"
             fill="none"
@@ -101,7 +141,30 @@ export default function PostCard({ post }: PostCardProps) {
             />
           </svg>
           <span>{post.commentCount}</span>
-        </div>
+        </button>
+
+        <SaveButton initialSaved={post.isSaved} initialCount={post.savedCount} />
+
+        <button
+          type="button"
+          className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-cyan-500 transition-colors ml-auto"
+        >
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.8}
+            stroke="currentColor"
+            aria-hidden="true"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186Zm0-12.814a2.25 2.25 0 1 0 3.933-2.185 2.25 2.25 0 0 0-3.933 2.185Z"
+            />
+          </svg>
+          <span className="text-xs">シェア</span>
+        </button>
       </div>
     </article>
   )

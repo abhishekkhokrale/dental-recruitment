@@ -27,5 +27,13 @@
     "passwordHash": "d6845bb037f194fcbb46d7cb440a68a0:345369b8d122ced86d1f4daf1712d02404afdf18f330557f102d68f74003ba714b71010b6ea72bea03e05ba0c9ac7b083ff00ce822f491cfce6820ad8baa8201",
     "role": "seeker",
     "createdAt": "2026-03-23T09:43:28.901Z"
+  },
+  {
+    "id": "16b7dbe39d915484",
+    "name": "Abhishek k",
+    "email": "rahul.fidel@gmail.com",
+    "passwordHash": "a391eeca985fd18e6d89dd9ca994926c:18f90231dbbbfa54185a60e348a8d3e992e557976de8bcf3357b6f6a0ec35f3f76413db9685a1d6b9f33726c6f1051614bc4aecc30d91ab9b4342929e78e1870",
+    "role": "seeker",
+    "createdAt": "2026-03-25T10:40:31.302Z"
   }
 ]
