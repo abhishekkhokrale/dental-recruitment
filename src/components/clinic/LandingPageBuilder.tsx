@@ -582,18 +582,17 @@ export default function LandingPageBuilder({ clinicName = '' }: { clinicName?: s
   // How many gallery image slots the active free template uses
   const templateGalleryCount = useMemo(() => {
     if (!activeFreeTemplate) return 6
-    let max = 0
+    const slots = new Set<string>()
     for (const sec of activeFreeTemplate.sections) {
       for (const col of sec.columns) {
         for (const block of col.blocks) {
           if (block.type === 'image-slot' && block.slot?.startsWith('gallery-')) {
-            const n = parseInt(block.slot.replace('gallery-', ''), 10)
-            if (n > max) max = n
+            slots.add(block.slot)
           }
         }
       }
     }
-    return max > 0 ? max : 6
+    return slots.size > 0 ? slots.size : 6
   }, [activeFreeTemplate])
 
   const [showTemplateGallery, setShowTemplateGallery] = useState(false)
@@ -619,7 +618,10 @@ export default function LandingPageBuilder({ clinicName = '' }: { clinicName?: s
     loadAllTemplates().then(setAdminTemplates).catch(() => {})
   }, [])
 
-  const allThemes = { ...THEMES, ...adminThemes }
+  // Keep built-in and admin themes separate — admin IDs never overwrite built-ins
+  const allThemes = { ...THEMES, ...Object.fromEntries(
+    Object.entries(adminThemes).filter(([id]) => !(id in THEMES))
+  ) }
 
   const toggleVisible = (id: string) => {
     setSections(prev => prev.map(s => s.id === id ? { ...s, visible: !s.visible } : s))
@@ -639,14 +641,19 @@ export default function LandingPageBuilder({ clinicName = '' }: { clinicName?: s
   function onDragEnd() { dragIdx.current = null; setDragOverIdx(null) }
 
   const [publishError, setPublishError] = useState<string | null>(null)
+  const [publishing, setPublishing] = useState(false)
 
   async function handlePublish() {
+    if (publishing) return
     setPublishError(null)
+    setPublishing(true)
     try {
       await lpSave(slug, { sections, templateId, themeId, customTheme })
       setPublished(true)
     } catch {
       setPublishError('保存に失敗しました。ページを再読み込みして再度お試しください。')
+    } finally {
+      setPublishing(false)
     }
   }
 
@@ -747,9 +754,10 @@ export default function LandingPageBuilder({ clinicName = '' }: { clinicName?: s
           <div className="flex flex-col items-end gap-1">
             <button
               onClick={handlePublish}
-              className="px-4 py-2 text-sm font-bold text-white bg-cyan-600 rounded-lg hover:bg-cyan-700 transition shadow-sm"
+              disabled={publishing}
+              className="px-4 py-2 text-sm font-bold text-white bg-cyan-600 rounded-lg hover:bg-cyan-700 transition shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              🚀 公開する
+              {publishing ? '保存中...' : '🚀 公開する'}
             </button>
             {publishError && (
               <p className="text-xs text-red-500 max-w-xs text-right">{publishError}</p>
@@ -768,6 +776,11 @@ export default function LandingPageBuilder({ clinicName = '' }: { clinicName?: s
               <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">セクション（ドラッグで並替）</p>
             </div>
             <div className="flex-1 overflow-y-auto">
+              {templateSectionTypes && (
+                <p className="text-xs text-amber-700 bg-amber-50 border-b border-amber-100 px-3 py-2">
+                  テンプレートに含まれるセクションのみ表示しています
+                </p>
+              )}
               {sections.map((section, i) => {
                 if (templateSectionTypes && !templateSectionTypes.has(section.type)) return null
                 const meta = SECTION_META[section.type] ?? { icon: '📦', label: section.type }

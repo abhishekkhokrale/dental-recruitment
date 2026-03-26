@@ -17,22 +17,25 @@ export default function PublicClinicLandingPage() {
   const [themeId, setThemeId] = useState<ThemeId>('clean')
   const [customTheme, setCustomTheme] = useState<Partial<LPTheme>>({})
   const [adminThemes, setAdminThemes] = useState<Record<string, LPTheme>>({})
-  const [freeTemplate, setFreeTemplate] = useState<FreeTemplate | undefined>(undefined)
+  // undefined = still loading, null = template deleted/not found, FreeTemplate = loaded
+  const [freeTemplate, setFreeTemplate] = useState<FreeTemplate | null | undefined>(undefined)
   const [notFound, setNotFound] = useState(false)
 
   useEffect(() => {
     loadAllThemes().then(setAdminThemes).catch(() => {})
     lpLoad(slug).then(async (data) => {
       if (!data) { setNotFound(true); return }
-      const parsed = data as { sections: PageSection[]; templateId?: TemplateId; themeId: ThemeId; customTheme?: Partial<LPTheme> }
-      const tid = parsed.templateId ?? 'modern'
-      setSections(parsed.sections)
+      const parsed = data as { sections?: PageSection[]; templateId?: string; themeId?: ThemeId; customTheme?: Partial<LPTheme> }
+      const tid = (typeof parsed.templateId === 'string' ? parsed.templateId : 'modern') as TemplateId
+      setSections(parsed.sections ?? [])
       setTemplateId(tid)
-      setThemeId(parsed.themeId)
+      setThemeId(parsed.themeId ?? 'clean')
       setCustomTheme(parsed.customTheme ?? {})
       if (tid.startsWith('free_')) {
         const templates = await loadAllTemplates().catch(() => ({} as Record<string, FreeTemplate>))
-        setFreeTemplate(templates[tid])
+        setFreeTemplate(templates[tid] ?? null)
+      } else {
+        setFreeTemplate(null)
       }
     }).catch(() => setNotFound(true))
   }, [slug])
@@ -58,5 +61,5 @@ export default function PublicClinicLandingPage() {
     )
   }
 
-  return <LandingPageRenderer sections={sections} templateId={templateId} themeId={themeId} customTheme={customTheme} extraThemes={adminThemes} freeTemplate={freeTemplate} />
+  return <LandingPageRenderer sections={sections} templateId={templateId} themeId={themeId} customTheme={customTheme} extraThemes={adminThemes} freeTemplate={freeTemplate ?? undefined} />
 }
