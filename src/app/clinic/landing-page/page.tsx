@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 }
 
 export default async function LandingPageBuilderPage() {
-  const user = await getSessionUser()
+  const user = await getSessionUser().catch(() => null)
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="mb-6">
