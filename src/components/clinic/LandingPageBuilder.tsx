@@ -51,7 +51,8 @@ const RTF_TOOLS = [
   { cmd: 'insertOrderedList',   label: <span className="text-xs">1. リスト</span>,title: '番号リスト' },
   { cmd: 'separator' },
   { cmd: 'removeFormat',    label: <span className="text-xs text-red-400">✕ 解除</span>, title: '書式解除' },
-] as const
+] satisfies { cmd: string; label?: React.ReactNode; title?: string }[]
+
 
 function RichTextEditor({ value, onChange }: { value: string; onChange: (html: string) => void }) {
   const editorRef = useRef<HTMLDivElement>(null)
@@ -72,6 +73,7 @@ function RichTextEditor({ value, onChange }: { value: string; onChange: (html: s
     onChange(editorRef.current?.innerHTML || '')
   }
 
+
   return (
     <div className="border border-gray-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-cyan-400 focus-within:border-transparent">
       {/* Toolbar */}
@@ -83,11 +85,11 @@ function RichTextEditor({ value, onChange }: { value: string; onChange: (html: s
               <button
                 key={tool.cmd}
                 type="button"
-                title={(tool as any).title}
+                title={tool.title}
                 onMouseDown={e => { e.preventDefault(); exec(tool.cmd) }}
                 className="px-2 py-1 rounded hover:bg-gray-200 transition text-sm text-gray-700 leading-none"
               >
-                {(tool as any).label}
+                {tool.label}
               </button>
             )
         )}
@@ -144,13 +146,13 @@ function IconPicker({
   const ref = useRef<HTMLDivElement>(null)
 
   // Close on outside click
-  useState(() => {
+  useEffect(() => {
     function handler(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
     }
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
-  })
+  }, [])
 
   return (
     <div className="relative" ref={ref}>
@@ -274,10 +276,10 @@ function EditForm({
   update,
 }: {
   section: PageSection
-  update: (id: string, patch: Record<string, any>) => void
+  update: (id: string, patch: Record<string, unknown>) => void
 }) {
   const c = section.content
-  const set = (key: string, value: any) => update(section.id, { [key]: value })
+  const set = (key: string, value: unknown) => update(section.id, { [key]: value })
 
   switch (section.type) {
     case 'topbar':
@@ -338,7 +340,7 @@ function EditForm({
       return (
         <div className="space-y-3">
           <div><Label>見出し</Label><input type="text" value={c.title || ''} onChange={e => set('title', e.target.value)} className={ic} /></div>
-          {(c.items || []).map((item: any, i: number) => (
+          {(c.items || []).map((item: { icon?: string; title?: string; desc?: string }, i: number) => (
             <div key={i} className="border border-gray-200 rounded-lg p-3 space-y-2">
               <p className="text-xs font-bold text-gray-500">特徴 {i + 1}</p>
               <div className="grid grid-cols-4 gap-2">
@@ -491,7 +493,7 @@ export default function LandingPageBuilder() {
   }
 
   function handleCopy() {
-    navigator.clipboard.writeText(`http://localhost:3000/clinics/${slug}`).catch(() => {})
+    navigator.clipboard.writeText(`${window.location.origin}/clinics/${slug}`).catch(() => {})
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
@@ -503,7 +505,7 @@ export default function LandingPageBuilder() {
         <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center text-3xl">🎉</div>
         <h2 className="text-xl font-bold text-gray-900">採用ページを公開しました！</h2>
         <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 w-full max-w-md">
-          <span className="text-sm text-cyan-700 font-mono flex-1 truncate">localhost:3000/clinics/{slug}</span>
+          <span className="text-sm text-cyan-700 font-mono flex-1 truncate">{typeof window !== 'undefined' ? window.location.origin : ''}/clinics/{slug}</span>
           <button onClick={handleCopy} className="shrink-0 text-xs font-bold text-white bg-cyan-600 hover:bg-cyan-700 px-3 py-1.5 rounded-lg transition">
             {copied ? '✓ コピー済み' : 'コピー'}
           </button>
@@ -667,7 +669,7 @@ export default function LandingPageBuilder() {
                     <div className="w-3 h-3 rounded-full bg-green-400" />
                   </div>
                   <div className="flex-1 bg-white rounded-md px-3 py-1 text-xs text-gray-400 font-mono">
-                    localhost:3000/clinics/{slug || 'your-clinic'}
+                    {typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'}/clinics/{slug || 'your-clinic'}
                   </div>
                 </div>
                 {/* Page content */}
