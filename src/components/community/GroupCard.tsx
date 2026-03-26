@@ -18,13 +18,13 @@ export default function GroupCard({ group, compact = false }: GroupCardProps) {
           <p className="text-xs text-gray-400">{group.memberCount.toLocaleString()}人のメンバー</p>
         </div>
         {group.isJoined ? (
-          <span className="text-xs text-cyan-600 font-medium shrink-0">参加済み</span>
+          <span className="text-xs text-cyan-600 font-medium shrink-0">フォロー中</span>
         ) : (
           <button
             type="button"
             className="text-xs font-medium text-gray-600 border border-gray-300 rounded-full px-3 py-1 hover:border-cyan-400 hover:text-cyan-600 transition-colors shrink-0"
           >
-            参加
+            + フォロー
           </button>
         )}
       </div>
@@ -58,7 +58,7 @@ export default function GroupCard({ group, compact = false }: GroupCardProps) {
                 : 'bg-cyan-600 text-white hover:bg-cyan-700',
             ].join(' ')}
           >
-            {group.isJoined ? '参加済み' : 'グループに参加'}
+            {group.isJoined ? 'フォロー中' : '+ フォロー'}
           </button>
         </div>
       </div>
