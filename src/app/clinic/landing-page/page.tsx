@@ -1,11 +1,13 @@
 import type { Metadata } from 'next'
+import { getSessionUser } from '@/lib/auth'
 import LandingPageBuilder from '@/components/clinic/LandingPageBuilder'
 
 export const metadata: Metadata = {
-  title: '採用ページ作成 | スマイル歯科クリニック',
+  title: 'ランディングページ',
 }
 
-export default function LandingPageBuilderPage() {
+export default async function LandingPageBuilderPage() {
+  const user = await getSessionUser()
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="mb-6">
@@ -14,7 +16,7 @@ export default function LandingPageBuilderPage() {
           コーディング不要で、クリニック専用の採用ページを作成・公開できます。
         </p>
       </div>
-      <LandingPageBuilder />
+      <LandingPageBuilder clinicName={user?.name ?? ''} />
     </div>
   )
 }
