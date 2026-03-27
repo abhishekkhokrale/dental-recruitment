@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react'
 import { useState } from 'react'
-import { communityTopics, type CommunityTopic, type ContentType, type CommunityPost, mockCurrentUser } from '@/lib/mock-data/community'
+import { communityTopics, type CommunityTopic, type ContentType, type CommunityPost, type CommunityAuthor } from '@/lib/mock-data/community'
 
 const TOPIC_OPTIONS = communityTopics.filter((t) => t !== 'すべて') as CommunityTopic[]
 const MAX_CHARS = 2000
@@ -18,9 +18,10 @@ interface NewPostModalProps {
   open: boolean
   onClose: () => void
   onNewPost?: (post: CommunityPost) => void
+  currentAuthor: CommunityAuthor
 }
 
-export default function NewPostModal({ open, onClose, onNewPost }: NewPostModalProps) {
+export default function NewPostModal({ open, onClose, onNewPost, currentAuthor }: NewPostModalProps) {
   const [contentType, setContentType] = useState<ContentType>('post')
   const [topic, setTopic] = useState<string>('')
   const [title, setTitle] = useState('')
@@ -55,13 +56,7 @@ export default function NewPostModal({ open, onClose, onNewPost }: NewPostModalP
       const newPost: CommunityPost = {
         id: `post-${Date.now()}`,
         contentType,
-        author: {
-          id: mockCurrentUser.id,
-          name: mockCurrentUser.name,
-          profession: mockCurrentUser.profession,
-          experience: mockCurrentUser.experience,
-          specialty: mockCurrentUser.specialty,
-        },
+        author: currentAuthor,
         title: needsTitle && title.trim() ? title.trim() : undefined,
         content: content.trim(),
         topic,

@@ -192,6 +192,112 @@ export const mockCommunityGroups: CommunityGroup[] = [
   },
 ]
 
+export interface TrendingPost {
+  id: string
+  title: string
+  desc: string
+  body: string
+  group: string
+  groupSlug: string
+  bgFrom: string
+  bgTo: string
+  accent: string
+  icon: string
+  avatar: string
+  comments: number
+  author: string
+  authorProfession: ProfessionType
+  postedAt: string
+}
+
+export const trendingPosts: TrendingPost[] = [
+  {
+    id: 't1',
+    title: 'フルマウスリハビリの最新アプローチ',
+    desc: '重度咬耗患者へのジルコニアクラウン全顎適用',
+    body: '重度咬耗患者へのフルマウスリハビリは、補綴科において最も複雑な治療の一つです。ジルコニアクラウンを全顎に適用する際、咬合高径の回復から最終補綴物の装着まで、段階的かつ慎重なアプローチが求められます。\n\n本ケースでは70代男性の患者に対し、プロビジョナルレストレーションを6ヶ月間使用して筋肉と関節の適応を確認した後、最終的にモノリシックジルコニアクラウン28本を装着しました。\n\n咬合採得の精度向上にデジタルスキャンを活用し、ラボとのコミュニケーションもデータ共有で大幅に改善されました。みなさんのフルマウスリハビリでの工夫や失敗談もぜひ教えてください。',
+    group: '補綴科',
+    groupSlug: 'prosthodontics',
+    bgFrom: '#1e1b4b',
+    bgTo: '#312e81',
+    accent: '#818cf8',
+    icon: '🦷',
+    avatar: '🦷',
+    comments: 23,
+    author: '山本 拓也 先生',
+    authorProfession: 'dentist',
+    postedAt: '2026-03-20T09:00:00Z',
+  },
+  {
+    id: 't2',
+    title: '辞めないスタッフチームの作り方',
+    desc: '離職率40%を10%未満にした実践的な取り組み',
+    body: '3年前、私のクリニックは深刻な人材不足に悩んでいました。年間離職率が40%を超え、採用コストと教育コストが経営を圧迫していました。\n\n転機となったのは「なぜスタッフが辞めるのか」を真剣に聞いたことです。面談を通じてわかったのは、給与よりも「成長の機会」と「職場の人間関係」が退職理由の上位だということ。\n\n具体的な改善策として実施したのは、①毎月の個人面談の導入、②外部研修費の全額補助、③シフトの柔軟化、④給与の透明な評価基準の整備です。\n\n2年間でスタッフの定着率は大幅に改善し、今では採用に困ることなく経営に集中できています。同じ悩みを持つ先生方に参考にしていただければ幸いです。',
+    group: 'クリニックオーナー',
+    groupSlug: 'clinic-owners',
+    bgFrom: '#0c4a6e',
+    bgTo: '#0369a1',
+    accent: '#38bdf8',
+    icon: '🏥',
+    avatar: '🏥',
+    comments: 67,
+    author: '佐藤 誠一 院長',
+    authorProfession: 'clinic_owner',
+    postedAt: '2026-03-22T14:30:00Z',
+  },
+  {
+    id: 't3',
+    title: 'マウスピース矯正の適応基準を見直す',
+    desc: '成人患者でNOと言うべきケースの見極め方',
+    body: 'アライナー矯正の普及により、患者からの相談件数が増えています。しかし「マウスピース矯正なら何でも治せる」という誤解を持った患者も多く、適切な症例選択の重要性が増しています。\n\nNOと言うべきケースの目安として私が意識しているのは、①重度の骨格性不正咬合、②歯根吸収リスクが高い症例、③コンプライアンスが期待できない患者、④重度の歯周病が未治療の場合です。\n\n患者に「なぜブラケットの方が適しているか」を丁寧に説明することで、信頼関係が生まれることも多いです。みなさんは適応外症例にどう対応していますか？',
+    group: '矯正科',
+    groupSlug: 'orthodontics',
+    bgFrom: '#4a0519',
+    bgTo: '#9f1239',
+    accent: '#fb7185',
+    icon: '😁',
+    avatar: '😁',
+    comments: 56,
+    author: '田村 恵子 先生',
+    authorProfession: 'dentist',
+    postedAt: '2026-03-21T11:00:00Z',
+  },
+  {
+    id: 't4',
+    title: 'CAD/CAMとハンドスキルの両立',
+    desc: 'テクノロジー時代に職人技を磨く理由',
+    body: 'デジタル化が進む歯科技工の現場で、「手の技術はもう不要になるのか」という議論をよく耳にします。私はその考えに真っ向から反対します。\n\nCAD/CAMは確かに作業効率を大幅に向上させますが、最終的な審美性の微調整、咬合の細かなフィニッシング、予期しないトラブルへの対応は、依然として職人の手技に依存しています。\n\nむしろデジタルツールを使いこなすためにも、補綴物の形態や咬合の本質を手作業で理解していることが重要です。若手技工士の方に伝えたいのは、デジタルスキルと職人技は競合するものではなく、補完し合うものだということです。',
+    group: '歯科技工士',
+    groupSlug: 'dental-technicians',
+    bgFrom: '#431407',
+    bgTo: '#9a3412',
+    accent: '#fb923c',
+    icon: '⚙️',
+    avatar: '⚙️',
+    comments: 38,
+    author: '鈴木 浩二',
+    authorProfession: 'technician',
+    postedAt: '2026-03-19T08:00:00Z',
+  },
+  {
+    id: 't5',
+    title: '小児歯科における行動管理の最前線',
+    desc: '非協力的な幼児への最新アプローチとSDF活用法',
+    body: '小児歯科における最大の課題の一つが、非協力的な幼児への対応です。従来のTell-Show-Doに加え、近年では「アクセプタンス＆コミットメント療法」に基づいたアプローチが注目されています。\n\nまた、Silver Diamine Fluoride（SDF）は、幼若永久歯および乳歯の活動性齲蝕に対して、侵襲を最小限に抑えながら進行を止める効果が実証されており、特に行動管理が難しい患者に対して有効な選択肢です。\n\n保護者への説明と同意取得のコツ、歯科恐怖症の予防につながるポジティブな初診体験の作り方など、ぜひみなさんの実践例を共有してください。',
+    group: '小児歯科',
+    groupSlug: 'paediatric-dentistry',
+    bgFrom: '#052e16',
+    bgTo: '#166534',
+    accent: '#4ade80',
+    icon: '👶',
+    avatar: '👶',
+    comments: 29,
+    author: '中村 陽子 先生',
+    authorProfession: 'dentist',
+    postedAt: '2026-03-18T10:00:00Z',
+  },
+]
+
 export const mockCommunityPosts: CommunityPost[] = [
   {
     id: 'post-001',

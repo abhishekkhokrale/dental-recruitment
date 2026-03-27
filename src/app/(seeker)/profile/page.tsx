@@ -1,28 +1,12 @@
+import { redirect } from 'next/navigation'
 import type { Metadata } from 'next'
 import type { SeekerProfile } from '@/lib/types/seeker'
+import { getSessionUser } from '@/lib/auth'
 import ProfileEditForm from '@/components/profile/ProfileEditForm'
 
 export const metadata: Metadata = {
   title: 'マイプロフィール | ブルージョブズ',
   description: 'プロフィールを管理して、より良い求人にマッチングしましょう。',
-}
-
-const mockSeeker: SeekerProfile = {
-  id: 'seeker-001',
-  name: '山田 花子',
-  email: 'hanako.yamada@example.com',
-  phone: '090-1234-5678',
-  prefecture: '東京都',
-  age: 28,
-  qualification: ['歯科衛生士'],
-  experienceYears: 5,
-  specialties: ['予防歯科', 'スケーリング', '小児歯科'],
-  preferredPrefectures: ['東京都', '神奈川県'],
-  preferredEmploymentType: ['正社員'],
-  desiredSalaryMin: 250000,
-  bio: '歯科衛生士として5年間、予防歯科に力を入れたクリニックで勤務してきました。患者さんとの信頼関係を大切にしながら、丁寧な施術を心がけています。',
-  isPublic: true,
-  createdAt: '2025-04-01',
 }
 
 function calcCompletionPercent(seeker: SeekerProfile): number {
@@ -44,8 +28,29 @@ function calcCompletionPercent(seeker: SeekerProfile): number {
   return Math.round((filled / fields.length) * 100)
 }
 
-export default function ProfilePage() {
-  const completion = calcCompletionPercent(mockSeeker)
+export default async function ProfilePage() {
+  const user = await getSessionUser()
+  if (!user) redirect('/login')
+
+  const seeker: SeekerProfile = {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    phone: undefined,
+    prefecture: user.prefecture || undefined,
+    age: undefined,
+    qualification: user.qualifications ?? [],
+    experienceYears: user.experienceYears ?? 0,
+    specialties: [],
+    preferredPrefectures: [],
+    preferredEmploymentType: user.employmentTypes ?? [],
+    desiredSalaryMin: user.desiredSalaryMin ?? undefined,
+    bio: user.bio || undefined,
+    isPublic: true,
+    createdAt: user.createdAt,
+  }
+
+  const completion = calcCompletionPercent(seeker)
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -54,12 +59,12 @@ export default function ProfilePage() {
         <span
           className={[
             'text-xs font-medium px-2.5 py-1 rounded-full',
-            mockSeeker.isPublic
+            seeker.isPublic
               ? 'bg-green-100 text-green-700'
               : 'bg-gray-100 text-gray-500',
           ].join(' ')}
         >
-          {mockSeeker.isPublic ? '公開中' : '非公開'}
+          {seeker.isPublic ? '公開中' : '非公開'}
         </span>
       </div>
 
@@ -93,29 +98,29 @@ export default function ProfilePage() {
           <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
             <div>
               <dt className="text-gray-500">氏名</dt>
-              <dd className="font-medium text-gray-800 mt-0.5">{mockSeeker.name}</dd>
+              <dd className="font-medium text-gray-800 mt-0.5">{seeker.name}</dd>
             </div>
             <div>
               <dt className="text-gray-500">メールアドレス</dt>
-              <dd className="font-medium text-gray-800 mt-0.5">{mockSeeker.email}</dd>
+              <dd className="font-medium text-gray-800 mt-0.5">{seeker.email}</dd>
             </div>
             <div>
               <dt className="text-gray-500">電話番号</dt>
-              <dd className="font-medium text-gray-800 mt-0.5">{mockSeeker.phone ?? '未設定'}</dd>
+              <dd className="font-medium text-gray-800 mt-0.5">{seeker.phone ?? '未設定'}</dd>
             </div>
             <div>
               <dt className="text-gray-500">年齢</dt>
-              <dd className="font-medium text-gray-800 mt-0.5">{mockSeeker.age ? `${mockSeeker.age}歳` : '未設定'}</dd>
+              <dd className="font-medium text-gray-800 mt-0.5">{seeker.age ? `${seeker.age}歳` : '未設定'}</dd>
             </div>
             <div>
               <dt className="text-gray-500">都道府県</dt>
-              <dd className="font-medium text-gray-800 mt-0.5">{mockSeeker.prefecture ?? '未設定'}</dd>
+              <dd className="font-medium text-gray-800 mt-0.5">{seeker.prefecture ?? '未設定'}</dd>
             </div>
           </dl>
-          {mockSeeker.bio && (
+          {seeker.bio && (
             <div className="mt-4 pt-4 border-t border-gray-100">
               <dt className="text-gray-500 text-sm mb-1">自己紹介</dt>
-              <dd className="text-sm text-gray-700 leading-relaxed">{mockSeeker.bio}</dd>
+              <dd className="text-sm text-gray-700 leading-relaxed">{seeker.bio}</dd>
             </div>
           )}
         </section>
@@ -130,22 +135,22 @@ export default function ProfilePage() {
             <div>
               <dt className="text-gray-500">保有資格</dt>
               <dd className="mt-1 flex flex-wrap gap-1.5">
-                {mockSeeker.qualification.map((q) => (
+                {seeker.qualification.length > 0 ? seeker.qualification.map((q) => (
                   <span key={q} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-cyan-50 text-cyan-700 border border-cyan-100">
                     {q}
                   </span>
-                ))}
+                )) : <span className="text-gray-400">未設定</span>}
               </dd>
             </div>
             <div>
               <dt className="text-gray-500">経験年数</dt>
-              <dd className="font-medium text-gray-800 mt-0.5">{mockSeeker.experienceYears}年</dd>
+              <dd className="font-medium text-gray-800 mt-0.5">{seeker.experienceYears}年</dd>
             </div>
-            {mockSeeker.specialties.length > 0 && (
+            {seeker.specialties.length > 0 && (
               <div>
                 <dt className="text-gray-500">得意分野・スペシャリティ</dt>
                 <dd className="mt-1 flex flex-wrap gap-1.5">
-                  {mockSeeker.specialties.map((s) => (
+                  {seeker.specialties.map((s) => (
                     <span key={s} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
                       {s}
                     </span>
@@ -166,28 +171,28 @@ export default function ProfilePage() {
             <div>
               <dt className="text-gray-500">希望雇用形態</dt>
               <dd className="mt-1 flex flex-wrap gap-1.5">
-                {mockSeeker.preferredEmploymentType.map((t) => (
+                {seeker.preferredEmploymentType.length > 0 ? seeker.preferredEmploymentType.map((t) => (
                   <span key={t} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
                     {t}
                   </span>
-                ))}
+                )) : <span className="text-gray-400">未設定</span>}
               </dd>
             </div>
             <div>
               <dt className="text-gray-500">希望勤務地</dt>
               <dd className="mt-1 flex flex-wrap gap-1.5">
-                {mockSeeker.preferredPrefectures.map((p) => (
+                {seeker.preferredPrefectures.length > 0 ? seeker.preferredPrefectures.map((p) => (
                   <span key={p} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
                     {p}
                   </span>
-                ))}
+                )) : <span className="text-gray-400">未設定</span>}
               </dd>
             </div>
-            {mockSeeker.desiredSalaryMin && (
+            {seeker.desiredSalaryMin && (
               <div>
                 <dt className="text-gray-500">希望月給（最低）</dt>
                 <dd className="font-medium text-gray-800 mt-0.5">
-                  {mockSeeker.desiredSalaryMin.toLocaleString('ja-JP')}円〜
+                  {seeker.desiredSalaryMin.toLocaleString('ja-JP')}円〜
                 </dd>
               </div>
             )}
@@ -196,7 +201,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Edit form (client component) */}
-      <ProfileEditForm seeker={mockSeeker} />
+      <ProfileEditForm seeker={seeker} />
     </div>
   )
 }

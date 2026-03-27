@@ -39,15 +39,18 @@ export const resetTokenStore = new Map<string, ResetTokenRecord>()
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 export function findUserByEmail(email: string): StoredUser | null {
+  syncUsersFromJson()
   const id = emailIndex.get(email.toLowerCase())
   return id ? (userStore.get(id) ?? null) : null
 }
 
 export function findUserById(id: string): StoredUser | null {
+  syncUsersFromJson()
   return userStore.get(id) ?? null
 }
 
 export function findUserByLineId(lineId: string): StoredUser | null {
+  syncUsersFromJson()
   const id = lineIndex.get(lineId)
   return id ? (userStore.get(id) ?? null) : null
 }
@@ -83,23 +86,33 @@ interface UserJsonRecord {
   password?: string       // plaintext  → hashed in memory on load
   passwordHash?: string   // pre-hashed → used as-is
   role: UserRole
+  prefecture?: string
+  qualifications?: Qualification[]
+  experienceYears?: number
+  employmentTypes?: string[]
+  desiredSalaryMin?: number | null
+  bio?: string
+  provider?: 'email' | 'line'
+  lineId?: string | null
   createdAt?: string
 }
 
 /**
- * Read data/users.json and load every entry into the in-memory store.
- * Supports both `password` (plaintext, for easy editing) and `passwordHash`.
- * Called once when this module is first imported.
+ * Sync data/users.json into the in-memory store on every call.
+ * Always overwrites profile fields so edits to users.json are reflected
+ * immediately without a server restart.
+ * For plaintext-password users, the computed hash is preserved across calls.
  */
-function loadUsersFromJson(): void {
+function syncUsersFromJson(): void {
   try {
     const raw     = fs.readFileSync(USERS_FILE, 'utf-8')
     const records = JSON.parse(raw) as UserJsonRecord[]
 
     for (const r of records) {
-      if (userStore.has(r.id)) continue
-
+      // Preserve already-computed hash for plaintext-password dev accounts
+      const existing = userStore.get(r.id)
       const passwordHash =
+        existing?.passwordHash ??
         r.passwordHash ??
         (r.password ? _hash(r.password) : null)
 
@@ -109,14 +122,14 @@ function loadUsersFromJson(): void {
         email: r.email,
         passwordHash,
         role: r.role,
-        prefecture: '',
-        qualifications: [],
-        experienceYears: 0,
-        employmentTypes: [],
-        desiredSalaryMin: null,
-        bio: '',
-        provider: 'email',
-        lineId: null,
+        prefecture: r.prefecture ?? '',
+        qualifications: r.qualifications ?? [],
+        experienceYears: r.experienceYears ?? 0,
+        employmentTypes: r.employmentTypes ?? [],
+        desiredSalaryMin: r.desiredSalaryMin ?? null,
+        bio: r.bio ?? '',
+        provider: r.provider ?? 'email',
+        lineId: r.lineId ?? null,
         createdAt: r.createdAt ?? new Date().toISOString(),
       })
     }
@@ -125,7 +138,7 @@ function loadUsersFromJson(): void {
   }
 }
 
-loadUsersFromJson()
+syncUsersFromJson()
 
 /**
  * Append a newly registered seeker to data/users.json so they survive
@@ -142,6 +155,14 @@ export function appendUserToJson(user: StoredUser): void {
       email: user.email,
       passwordHash: user.passwordHash ?? undefined,
       role: user.role,
+      prefecture: user.prefecture,
+      qualifications: user.qualifications,
+      experienceYears: user.experienceYears,
+      employmentTypes: user.employmentTypes,
+      desiredSalaryMin: user.desiredSalaryMin,
+      bio: user.bio,
+      provider: user.provider,
+      lineId: user.lineId,
       createdAt: user.createdAt,
     })
 

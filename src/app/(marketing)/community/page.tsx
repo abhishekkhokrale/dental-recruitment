@@ -7,9 +7,28 @@ import {
   PROFESSION_LABELS,
   PROFESSION_COLORS,
   EXPERIENCE_LABELS,
+  type CommunityAuthor,
+  type ProfessionType,
+  type ExperienceLevel,
 } from '@/lib/mock-data/community'
 import CommunityPageClient from '@/components/community/CommunityPageClient'
 import GroupCard from '@/components/community/GroupCard'
+import TrendingCarousel from '@/components/community/TrendingCarousel'
+import { getSessionUser } from '@/lib/auth'
+import type { Qualification } from '@/lib/types/seeker'
+
+function qualificationToProfession(qualifications: Qualification[]): ProfessionType {
+  if (qualifications.includes('歯科医師')) return 'dentist'
+  if (qualifications.includes('歯科衛生士')) return 'hygienist'
+  if (qualifications.includes('歯科技工士')) return 'technician'
+  return 'dentist'
+}
+
+function experienceYearsToLevel(years: number): ExperienceLevel {
+  if (years === 0) return 'fresher'
+  if (years <= 2) return 'fresher'
+  return 'experienced'
+}
 
 export const metadata: Metadata = {
   title: '歯科コミュニティ | ブルージョブズ',
@@ -25,9 +44,26 @@ const communityRules = [
   { num: 5, title: '違反コンテンツの報告', desc: 'ガイドライン違反のコンテンツは報告してください' },
 ]
 
-export default function CommunityPage() {
+export default async function CommunityPage() {
   const myGroups = mockCommunityGroups.filter((g) => g.isJoined)
   const suggestedGroups = mockCommunityGroups.filter((g) => !g.isJoined).slice(0, 3)
+
+  const sessionUser = await getSessionUser()
+  const currentAuthor: CommunityAuthor = sessionUser
+    ? {
+        id: sessionUser.id,
+        name: sessionUser.name,
+        profession: qualificationToProfession(sessionUser.qualifications),
+        experience: experienceYearsToLevel(sessionUser.experienceYears),
+        specialty: undefined,
+      }
+    : {
+        id: mockCurrentUser.id,
+        name: mockCurrentUser.name,
+        profession: mockCurrentUser.profession,
+        experience: mockCurrentUser.experience,
+        specialty: mockCurrentUser.specialty,
+      }
 
   return (
     <div className="bg-[#dae0e6] min-h-screen">
@@ -78,12 +114,15 @@ export default function CommunityPage() {
         </div>
       </div>
 
-      {/* Main layout — full width, feed + sidebar */}
+      {/* Main layout — feed + sidebar */}
       <div className="w-full px-4 lg:px-8 py-5">
-        <div className="flex gap-5">
-          {/* Feed column — takes all available space */}
+        <div className="flex gap-5 items-start">
+          {/* Left column: carousel + feed */}
           <div className="flex-1 min-w-0">
-            <CommunityPageClient initialPosts={mockCommunityPosts} />
+            <TrendingCarousel />
+            <div className="mt-4">
+              <CommunityPageClient initialPosts={mockCommunityPosts} currentAuthor={currentAuthor} />
+            </div>
           </div>
 
           {/* Right sidebar — fixed width */}
@@ -142,7 +181,7 @@ export default function CommunityPage() {
                 </div>
 
                 <Link
-                  href="/community/groups"
+                  href="/community/groups/recommended"
                   className="block w-full py-2 border border-cyan-600 text-cyan-600 hover:bg-cyan-50 text-sm font-bold rounded-full transition-colors text-center"
                 >
                   グループを見る
