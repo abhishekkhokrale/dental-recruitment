@@ -3,23 +3,40 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { LandingPageRenderer, type PageSection, type ThemeId } from '@/components/clinic/LandingPageRenderer'
+import { LandingPageRenderer, type LPTheme, type PageSection, type TemplateId, type ThemeId } from '@/components/clinic/LandingPageRenderer'
 import { lpLoad } from '@/lib/lpStorage'
+import { loadAllThemes } from '@/lib/themeStorage'
+import { loadAllTemplates, type FreeTemplate } from '@/lib/templateStorage'
 
 export default function PublicClinicLandingPage() {
   const params = useParams()
   const slug = params.slug as string
 
   const [sections, setSections] = useState<PageSection[] | null>(null)
+  const [templateId, setTemplateId] = useState<TemplateId>('modern')
   const [themeId, setThemeId] = useState<ThemeId>('clean')
+  const [customTheme, setCustomTheme] = useState<Partial<LPTheme>>({})
+  const [adminThemes, setAdminThemes] = useState<Record<string, LPTheme>>({})
+  // undefined = still loading, null = template deleted/not found, FreeTemplate = loaded
+  const [freeTemplate, setFreeTemplate] = useState<FreeTemplate | null | undefined>(undefined)
   const [notFound, setNotFound] = useState(false)
 
   useEffect(() => {
-    lpLoad(slug).then((data) => {
+    loadAllThemes().then(setAdminThemes).catch(() => {})
+    lpLoad(slug).then(async (data) => {
       if (!data) { setNotFound(true); return }
-      const parsed = data as { sections: PageSection[]; themeId: ThemeId }
-      setSections(parsed.sections)
-      setThemeId(parsed.themeId)
+      const parsed = data as { sections?: PageSection[]; templateId?: string; themeId?: ThemeId; customTheme?: Partial<LPTheme> }
+      const tid = (typeof parsed.templateId === 'string' ? parsed.templateId : 'modern') as TemplateId
+      setSections(parsed.sections ?? [])
+      setTemplateId(tid)
+      setThemeId(parsed.themeId ?? 'clean')
+      setCustomTheme(parsed.customTheme ?? {})
+      if (tid.startsWith('free_')) {
+        const templates = await loadAllTemplates().catch(() => ({} as Record<string, FreeTemplate>))
+        setFreeTemplate(templates[tid] ?? null)
+      } else {
+        setFreeTemplate(null)
+      }
     }).catch(() => setNotFound(true))
   }, [slug])
 
@@ -44,5 +61,5 @@ export default function PublicClinicLandingPage() {
     )
   }
 
-  return <LandingPageRenderer sections={sections} themeId={themeId} />
+  return <LandingPageRenderer sections={sections} templateId={templateId} themeId={themeId} customTheme={customTheme} extraThemes={adminThemes} freeTemplate={freeTemplate ?? undefined} />
 }

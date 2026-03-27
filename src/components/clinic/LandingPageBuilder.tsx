@@ -1,14 +1,19 @@
 'use client'
 
-import { useState, useRef, useCallback, useEffect } from 'react'
+import { useState, useRef, useCallback, useEffect, useMemo } from 'react'
 import {
   LandingPageRenderer,
   DEFAULT_SECTIONS,
   THEMES,
+  TEMPLATES,
+  type LPTheme,
   type PageSection,
   type ThemeId,
+  type TemplateId,
 } from './LandingPageRenderer'
 import { lpSave } from '@/lib/lpStorage'
+import { loadAllThemes } from '@/lib/themeStorage'
+import { loadAllTemplates, type FreeTemplate } from '@/lib/templateStorage'
 
 // ─── Section meta ────────────────────────────────────────────────────────────
 
@@ -38,24 +43,18 @@ function Label({ children }: { children: React.ReactNode }) {
 // ─── Rich Text Editor ────────────────────────────────────────────────────────
 
 const RTF_TOOLS = [
-  { cmd: 'bold',            label: <strong>B</strong>,        title: '太字' },
-  { cmd: 'italic',          label: <em>I</em>,                title: '斜体' },
-  { cmd: 'underline',       label: <u>U</u>,                  title: '下線' },
-  { cmd: 'strikeThrough',   label: <s>S</s>,                  title: '取消線' },
+  { cmd: 'bold',          label: <strong>B</strong>, title: '太字' },
+  { cmd: 'italic',        label: <em>I</em>,         title: '斜体' },
+  { cmd: 'underline',     label: <u>U</u>,           title: '下線' },
+  { cmd: 'strikeThrough', label: <s>S</s>,           title: '取消線' },
   { cmd: 'separator' },
-  { cmd: 'formatBlock:<h2>', label: <span className="font-bold text-xs">H2</span>, title: '大見出し' },
-  { cmd: 'formatBlock:<h3>', label: <span className="font-bold text-xs">H3</span>, title: '小見出し' },
-  { cmd: 'formatBlock:<p>',  label: <span className="text-xs">¶</span>,            title: '本文' },
-  { cmd: 'separator' },
-  { cmd: 'insertUnorderedList', label: <span className="text-xs">• リスト</span>, title: '箇条書き' },
-  { cmd: 'insertOrderedList',   label: <span className="text-xs">1. リスト</span>,title: '番号リスト' },
-  { cmd: 'separator' },
-  { cmd: 'removeFormat',    label: <span className="text-xs text-red-400">✕ 解除</span>, title: '書式解除' },
+  { cmd: 'removeFormat',  label: <span className="text-xs text-red-400">✕ 解除</span>, title: '書式解除' },
 ] satisfies { cmd: string; label?: React.ReactNode; title?: string }[]
 
 
 function RichTextEditor({ value, onChange }: { value: string; onChange: (html: string) => void }) {
-  const editorRef = useRef<HTMLDivElement>(null)
+  const editorRef   = useRef<HTMLDivElement>(null)
+  const savedRange  = useRef<Range | null>(null)
 
   // Set initial HTML once
   useEffect(() => {
@@ -63,11 +62,119 @@ function RichTextEditor({ value, onChange }: { value: string; onChange: (html: s
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // Save selection whenever it changes — works even when drag ends outside editor
+  useEffect(() => {
+    function onSelectionChange() {
+      const sel = window.getSelection()
+      if (!sel || sel.rangeCount === 0) return
+      const range = sel.getRangeAt(0)
+      if (editorRef.current?.contains(range.commonAncestorContainer)) {
+        savedRange.current = range.cloneRange()
+      }
+    }
+    document.addEventListener('selectionchange', onSelectionChange)
+    return () => document.removeEventListener('selectionchange', onSelectionChange)
+  }, [])
+
+  function saveSelection() {
+    const sel = window.getSelection()
+    if (sel && sel.rangeCount > 0) savedRange.current = sel.getRangeAt(0).cloneRange()
+  }
+
+  function restoreSelection() {
+    const sel = window.getSelection()
+    if (sel && savedRange.current) {
+      sel.removeAllRanges()
+      sel.addRange(savedRange.current)
+    }
+  }
+
+  function applyFormatBlock(tag: string) {
+    const editor = editorRef.current
+    if (!editor) return
+    restoreSelection()
+    const sel = window.getSelection()
+    if (!sel || sel.rangeCount === 0) return
+
+    function editorChild(node: Node | null): Node | null {
+      while (node && node.parentNode !== editor) node = node.parentNode
+      return node
+    }
+
+    const range      = sel.getRangeAt(0)
+    const startBlock = editorChild(range.startContainer)
+    const endBlock   = editorChild(range.endContainer)
+
+    const toConvert: Node[] = []
+    let scanning = false
+    for (const child of Array.from(editor.childNodes)) {
+      if (child === startBlock) scanning = true
+      if (scanning) toConvert.push(child)
+      if (child === endBlock) break
+    }
+    if (toConvert.length === 0 && startBlock) toConvert.push(startBlock)
+
+    for (const block of toConvert) {
+      const newEl = document.createElement(tag)
+      if (block.nodeType === Node.TEXT_NODE) {
+        newEl.textContent = block.textContent
+      } else {
+        newEl.innerHTML = (block as HTMLElement).innerHTML
+      }
+      editor.replaceChild(newEl, block)
+    }
+  }
+
+  function applyList(ordered: boolean) {
+    const editor = editorRef.current
+    if (!editor) return
+    restoreSelection()
+    const sel = window.getSelection()
+    if (!sel || sel.rangeCount === 0) return
+
+    function editorChild(node: Node | null): Node | null {
+      while (node && node.parentNode !== editor) node = node.parentNode
+      return node
+    }
+
+    const range      = sel.getRangeAt(0)
+    const startBlock = editorChild(range.startContainer)
+    const endBlock   = editorChild(range.endContainer)
+
+    const toConvert: Node[] = []
+    let scanning = false
+    for (const child of Array.from(editor.childNodes)) {
+      if (child === startBlock) scanning = true
+      if (scanning) toConvert.push(child)
+      if (child === endBlock) break
+    }
+    if (toConvert.length === 0 && startBlock) toConvert.push(startBlock)
+
+    const list = document.createElement(ordered ? 'ol' : 'ul')
+    list.style.paddingLeft = '1.5em'
+    for (const block of toConvert) {
+      const li = document.createElement('li')
+      li.innerHTML = block.nodeType === Node.TEXT_NODE
+        ? (block.textContent ?? '')
+        : (block as HTMLElement).innerHTML
+      list.appendChild(li)
+    }
+    // Replace all collected blocks with the single list element
+    const first = toConvert[0]
+    editor.insertBefore(list, first)
+    for (const block of toConvert) editor.removeChild(block)
+  }
+
   function exec(cmdStr: string) {
-    editorRef.current?.focus()
     if (cmdStr.startsWith('formatBlock:')) {
-      document.execCommand('formatBlock', false, cmdStr.slice('formatBlock:'.length))
+      const tag = cmdStr.slice('formatBlock:'.length).replace(/[<>]/g, '')
+      applyFormatBlock(tag)
+    } else if (cmdStr === 'insertUnorderedList') {
+      applyList(false)
+    } else if (cmdStr === 'insertOrderedList') {
+      applyList(true)
     } else {
+      restoreSelection()
       document.execCommand(cmdStr, false, undefined)
     }
     onChange(editorRef.current?.innerHTML || '')
@@ -100,6 +207,8 @@ function RichTextEditor({ value, onChange }: { value: string; onChange: (html: s
         contentEditable
         suppressContentEditableWarning
         onInput={() => onChange(editorRef.current?.innerHTML || '')}
+        onMouseUp={saveSelection}
+        onKeyUp={saveSelection}
         className="px-3 py-2.5 text-sm text-gray-900 min-h-[120px] focus:outline-none prose prose-sm max-w-none"
       />
     </div>
@@ -274,9 +383,11 @@ function UploadBtn({
 function EditForm({
   section,
   update,
+  galleryCount = 6,
 }: {
   section: PageSection
   update: (id: string, patch: Record<string, unknown>) => void
+  galleryCount?: number
 }) {
   const c = section.content
   const set = (key: string, value: unknown) => update(section.id, { [key]: value })
@@ -392,8 +503,8 @@ function EditForm({
       return (
         <div className="space-y-3">
           <div><Label>見出し</Label><input type="text" value={c.title || ''} onChange={e => set('title', e.target.value)} className={ic} /></div>
-          <p className="text-xs text-gray-400">最大6枚アップロードできます</p>
-          {(c.images || []).map((url: string, i: number) => (
+          <p className="text-xs text-gray-400">最大{galleryCount}枚アップロードできます</p>
+          {(c.images || []).slice(0, galleryCount).map((url: string, i: number) => (
             <UploadBtn
               key={i}
               label={`写真 ${i + 1}`}
@@ -446,9 +557,47 @@ function EditForm({
 
 // ─── Main Builder ─────────────────────────────────────────────────────────────
 
-export default function LandingPageBuilder() {
-  const [sections, setSections] = useState<PageSection[]>(DEFAULT_SECTIONS)
+export default function LandingPageBuilder({ clinicName = '' }: { clinicName?: string }) {
+  const [sections, setSections] = useState<PageSection[]>(() =>
+    DEFAULT_SECTIONS.map(s =>
+      s.type === 'header' && clinicName
+        ? { ...s, content: { ...s.content, clinicName, logoText: clinicName } }
+        : s
+    )
+  )
+  const [templateId, setTemplateId] = useState<TemplateId>('modern')
   const [themeId, setThemeId] = useState<ThemeId>('clean')
+  const [customTheme, setCustomTheme] = useState<Partial<LPTheme>>({})
+  const [adminThemes, setAdminThemes] = useState<Record<string, LPTheme>>({})
+  const [adminTemplates, setAdminTemplates] = useState<Record<string, FreeTemplate>>({})
+  const [activeFreeTemplate, setActiveFreeTemplate] = useState<FreeTemplate | undefined>(undefined)
+
+  // Which section types the active free template includes (null = show all)
+  const templateSectionTypes = useMemo(() => {
+    if (!activeFreeTemplate) return null
+    const types = new Set(activeFreeTemplate.sections.map(s => s.sectionType).filter(Boolean) as string[])
+    return types.size > 0 ? types : null
+  }, [activeFreeTemplate])
+
+  // How many gallery image slots the active free template uses
+  const templateGalleryCount = useMemo(() => {
+    if (!activeFreeTemplate) return 6
+    const slots = new Set<string>()
+    for (const sec of activeFreeTemplate.sections) {
+      for (const col of sec.columns) {
+        for (const block of col.blocks) {
+          if (block.type === 'image-slot' && block.slot?.startsWith('gallery-')) {
+            slots.add(block.slot)
+          }
+        }
+      }
+    }
+    return slots.size > 0 ? slots.size : 6
+  }, [activeFreeTemplate])
+
+  const [showTemplateGallery, setShowTemplateGallery] = useState(false)
+  const [showThemeGallery, setShowThemeGallery] = useState(false)
+  const [showCustomizer, setShowCustomizer] = useState(false)
   const [expandedId, setExpandedId] = useState<string | null>('hero')
   const [previewMode, setPreviewMode] = useState(false)
   const [published, setPublished] = useState(false)
@@ -462,6 +611,17 @@ export default function LandingPageBuilder() {
   const updateSection = useCallback((id: string, patch: Record<string, any>) => {
     setSections(prev => prev.map(s => s.id === id ? { ...s, content: { ...s.content, ...patch } } : s))
   }, [])
+
+  // Load admin-created themes and templates on mount
+  useEffect(() => {
+    loadAllThemes().then(setAdminThemes).catch(() => {})
+    loadAllTemplates().then(setAdminTemplates).catch(() => {})
+  }, [])
+
+  // Keep built-in and admin themes separate — admin IDs never overwrite built-ins
+  const allThemes = { ...THEMES, ...Object.fromEntries(
+    Object.entries(adminThemes).filter(([id]) => !(id in THEMES))
+  ) }
 
   const toggleVisible = (id: string) => {
     setSections(prev => prev.map(s => s.id === id ? { ...s, visible: !s.visible } : s))
@@ -481,14 +641,19 @@ export default function LandingPageBuilder() {
   function onDragEnd() { dragIdx.current = null; setDragOverIdx(null) }
 
   const [publishError, setPublishError] = useState<string | null>(null)
+  const [publishing, setPublishing] = useState(false)
 
   async function handlePublish() {
+    if (publishing) return
     setPublishError(null)
+    setPublishing(true)
     try {
-      await lpSave(slug, { sections, themeId })
+      await lpSave(slug, { sections, templateId, themeId, customTheme })
       setPublished(true)
     } catch {
       setPublishError('保存に失敗しました。ページを再読み込みして再度お試しください。')
+    } finally {
+      setPublishing(false)
     }
   }
 
@@ -529,21 +694,35 @@ export default function LandingPageBuilder() {
     <div className="flex flex-col h-[calc(100vh-64px)]">
       {/* ── Toolbar ── */}
       <div className="shrink-0 bg-white border-b border-gray-200 px-4 py-2.5 flex items-center gap-3 flex-wrap">
+        {/* Template selector */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowTemplateGallery(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition"
+          >
+            🖼 {TEMPLATES[templateId]?.nameJa ?? templateId}
+            <span className="text-gray-400">▾</span>
+          </button>
+        </div>
+
+        <div className="h-5 w-px bg-gray-200 mx-1" />
+
         {/* Theme selector */}
         <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-gray-500">テンプレート:</span>
-          <div className="flex gap-1.5">
-            {Object.entries(THEMES).map(([id, theme]) => (
-              <button
-                key={id}
-                onClick={() => setThemeId(id as ThemeId)}
-                title={theme.nameJa}
-                className={['w-6 h-6 rounded-full border-2 transition', themeId === id ? 'border-gray-800 scale-110' : 'border-transparent'].join(' ')}
-                style={{ background: theme.accent }}
-              />
-            ))}
-            <span className="text-xs text-gray-500 ml-1 self-center">{THEMES[themeId].nameJa}</span>
-          </div>
+          <button
+            onClick={() => setShowThemeGallery(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition"
+          >
+            <span className="w-3 h-3 rounded-full inline-block" style={{ background: THEMES[themeId]?.accent }} />
+            {THEMES[themeId]?.nameJa ?? themeId}
+            <span className="text-gray-400">▾</span>
+          </button>
+          <button
+            onClick={() => setShowCustomizer(v => !v)}
+            className={['px-3 py-1.5 text-xs font-semibold border rounded-lg transition', showCustomizer ? 'bg-cyan-600 text-white border-cyan-600' : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'].join(' ')}
+          >
+            🎨 カスタマイズ
+          </button>
         </div>
 
         <div className="h-5 w-px bg-gray-200 mx-1" />
@@ -575,9 +754,10 @@ export default function LandingPageBuilder() {
           <div className="flex flex-col items-end gap-1">
             <button
               onClick={handlePublish}
-              className="px-4 py-2 text-sm font-bold text-white bg-cyan-600 rounded-lg hover:bg-cyan-700 transition shadow-sm"
+              disabled={publishing}
+              className="px-4 py-2 text-sm font-bold text-white bg-cyan-600 rounded-lg hover:bg-cyan-700 transition shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              🚀 公開する
+              {publishing ? '保存中...' : '🚀 公開する'}
             </button>
             {publishError && (
               <p className="text-xs text-red-500 max-w-xs text-right">{publishError}</p>
@@ -596,7 +776,13 @@ export default function LandingPageBuilder() {
               <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">セクション（ドラッグで並替）</p>
             </div>
             <div className="flex-1 overflow-y-auto">
+              {templateSectionTypes && (
+                <p className="text-xs text-amber-700 bg-amber-50 border-b border-amber-100 px-3 py-2">
+                  テンプレートに含まれるセクションのみ表示しています
+                </p>
+              )}
               {sections.map((section, i) => {
+                if (templateSectionTypes && !templateSectionTypes.has(section.type)) return null
                 const meta = SECTION_META[section.type] ?? { icon: '📦', label: section.type }
                 const isExpanded = expandedId === section.id
                 const isDragOver = dragOverIdx === i
@@ -640,7 +826,7 @@ export default function LandingPageBuilder() {
                     {/* Expanded edit form */}
                     {isExpanded && (
                       <div className="px-3 pb-4 pt-2 bg-cyan-50/50 border-t border-cyan-100">
-                        <EditForm section={section} update={updateSection} />
+                        <EditForm section={section} update={updateSection} galleryCount={templateGalleryCount} />
                       </div>
                     )}
                   </div>
@@ -655,7 +841,7 @@ export default function LandingPageBuilder() {
           {previewMode ? (
             /* Full preview */
             <div className="bg-white min-h-full">
-              <LandingPageRenderer sections={sections} themeId={themeId} />
+              <LandingPageRenderer sections={sections} templateId={templateId} themeId={themeId} customTheme={customTheme} extraThemes={adminThemes} freeTemplate={activeFreeTemplate} />
             </div>
           ) : (
             /* Editor preview in a browser frame */
@@ -673,12 +859,236 @@ export default function LandingPageBuilder() {
                   </div>
                 </div>
                 {/* Page content */}
-                <LandingPageRenderer sections={sections} themeId={themeId} />
+                <LandingPageRenderer sections={sections} templateId={templateId} themeId={themeId} customTheme={customTheme} extraThemes={adminThemes} freeTemplate={activeFreeTemplate} />
               </div>
             </div>
           )}
         </div>
+
+        {/* ── Customizer panel ── */}
+        {showCustomizer && (
+          <div className="w-72 shrink-0 border-l border-gray-200 bg-white overflow-y-auto flex flex-col">
+            <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+              <span className="text-sm font-bold text-gray-800">🎨 テーマのカスタマイズ</span>
+              <button onClick={() => setShowCustomizer(false)} className="text-gray-400 hover:text-gray-600 text-lg leading-none">×</button>
+            </div>
+            <div className="p-4 space-y-5 flex-1">
+              {/* Base theme indicator */}
+              <div className="text-xs text-gray-500 bg-gray-50 rounded-lg px-3 py-2">
+                ベーステーマ: <strong>{THEMES[themeId]?.nameJa}</strong>
+              </div>
+
+              {([
+                { key: 'accent',        label: 'アクセントカラー',   hint: 'ボタン・リンク・見出しに使用' },
+                { key: 'topbarBg',      label: 'お知らせバー背景色',  hint: '' },
+                { key: 'headerBg',      label: 'ヘッダー背景色',      hint: '' },
+                { key: 'footerBg',      label: 'フッター背景色',      hint: '' },
+                { key: 'sectionAltBg',  label: 'セクション背景色',    hint: '交互背景' },
+                { key: 'cardBg',        label: 'カード背景色',        hint: '' },
+              ] as { key: keyof LPTheme; label: string; hint: string }[]).map(({ key, label, hint }) => {
+                const base = THEMES[themeId]?.[key] as string ?? '#ffffff'
+                const current = (customTheme[key] as string) ?? base
+                return (
+                  <div key={key}>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-xs font-semibold text-gray-700">{label}</label>
+                      {customTheme[key] && (
+                        <button
+                          onClick={() => setCustomTheme(p => { const n = { ...p }; delete n[key]; return n })}
+                          className="text-xs text-cyan-600 hover:underline"
+                        >リセット</button>
+                      )}
+                    </div>
+                    {hint && <p className="text-xs text-gray-400 mb-1">{hint}</p>}
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        value={current.startsWith('#') ? current : base}
+                        onChange={e => setCustomTheme(p => ({ ...p, [key]: e.target.value }))}
+                        className="w-9 h-9 rounded-lg border border-gray-200 cursor-pointer p-0.5"
+                      />
+                      <span className="text-xs font-mono text-gray-500">{current}</span>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+            <div className="p-4 border-t border-gray-100">
+              <button
+                onClick={() => setCustomTheme({})}
+                className="w-full py-2 text-xs font-semibold text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 transition"
+              >
+                すべてリセット
+              </button>
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* ── Template Gallery Modal ── */}
+      {showTemplateGallery && (
+        <div className="fixed inset-0 z-[100] bg-black/75 flex items-center justify-center p-6" onClick={() => setShowTemplateGallery(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white z-10">
+              <div>
+                <h2 className="text-base font-bold text-gray-900">レイアウトを選択</h2>
+                <p className="text-xs text-gray-500 mt-0.5">テーマカラーは別途変更できます。</p>
+              </div>
+              <button onClick={() => setShowTemplateGallery(false)} className="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>
+            </div>
+
+            {/* Built-in templates */}
+            <div className="px-6 pt-4 pb-2">
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">標準テンプレート</p>
+              <div className="grid grid-cols-3 gap-4">
+                {(Object.entries(TEMPLATES) as [TemplateId, typeof TEMPLATES[TemplateId]][]).map(([id, tmpl]) => {
+                  const isActive = templateId === id
+                  return (
+                    <button
+                      key={id}
+                      onClick={() => { setTemplateId(id); setActiveFreeTemplate(undefined); setShowTemplateGallery(false) }}
+                      className={['rounded-xl overflow-hidden border-2 transition text-left hover:shadow-md', isActive ? 'border-cyan-500 shadow-md' : 'border-gray-200 hover:border-gray-300'].join(' ')}
+                    >
+                      <div className="bg-gray-50 p-3 space-y-1.5 h-36 flex flex-col justify-center">
+                        {id === 'modern' && (
+                          <>
+                            <div className="h-2 rounded bg-gray-300 w-full" />
+                            <div className="h-8 rounded bg-gray-200 w-full" />
+                            <div className="flex gap-1">
+                              {[1,2,3].map(i => <div key={i} className="flex-1 h-5 rounded bg-gray-200" />)}
+                            </div>
+                            <div className="h-3 rounded bg-gray-300 w-3/4" />
+                          </>
+                        )}
+                        {id === 'professional' && (
+                          <>
+                            <div className="h-2 rounded bg-gray-300 w-full" />
+                            <div className="flex gap-1 h-10">
+                              <div className="flex-1 rounded bg-cyan-200" />
+                              <div className="flex-1 rounded bg-gray-200" />
+                            </div>
+                            <div className="space-y-1">
+                              {[1,2,3].map(i => <div key={i} className="flex gap-1 items-center"><div className="w-5 h-1.5 rounded bg-cyan-300" /><div className="flex-1 h-1.5 rounded bg-gray-200" /></div>)}
+                            </div>
+                          </>
+                        )}
+                        {id === 'boutique' && (
+                          <>
+                            <div className="flex items-center gap-1"><div className="flex-1 h-px bg-gray-300" /><div className="w-16 h-2 rounded bg-gray-300" /><div className="flex-1 h-px bg-gray-300" /></div>
+                            <div className="flex gap-2 items-center">
+                              <div className="flex-1 space-y-1"><div className="h-2 rounded bg-gray-300 w-3/4" /><div className="h-1.5 rounded bg-gray-200 w-full" /></div>
+                              <div className="w-12 h-12 rounded-full bg-gray-200" />
+                            </div>
+                            <div className="space-y-1">
+                              {[1,2].map(i => <div key={i} className="h-4 rounded-lg bg-white border-l-2 border-cyan-400 pl-1 flex items-center"><div className="w-full h-1 rounded bg-gray-200" /></div>)}
+                            </div>
+                          </>
+                        )}
+                      </div>
+                      <div className="px-3 py-3 bg-white">
+                        <div className="flex items-center justify-between mb-0.5">
+                          <span className="text-sm font-bold text-gray-800">{tmpl.nameJa}</span>
+                          {isActive && <span className="text-xs text-cyan-600 font-semibold">✓ 選択中</span>}
+                        </div>
+                        <p className="text-xs text-gray-400">{tmpl.desc}</p>
+                      </div>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Admin-created free templates */}
+            {Object.keys(adminTemplates).length > 0 && (
+              <div className="px-6 pt-2 pb-6">
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">カスタムテンプレート</p>
+                <div className="grid grid-cols-3 gap-4">
+                  {Object.entries(adminTemplates).map(([id, tmpl]) => {
+                    const isActive = templateId === id
+                    return (
+                      <button
+                        key={id}
+                        onClick={() => { setTemplateId(id as TemplateId); setActiveFreeTemplate(tmpl); setShowTemplateGallery(false) }}
+                        className={['rounded-xl overflow-hidden border-2 transition text-left hover:shadow-md', isActive ? 'border-cyan-500 shadow-md' : 'border-gray-200 hover:border-gray-300'].join(' ')}
+                      >
+                        {/* Generic free-template preview */}
+                        <div className="bg-gray-50 p-3 h-36 flex flex-col justify-center gap-2">
+                          {tmpl.sections.slice(0, 3).map((s, i) => (
+                            <div key={s.id} className="flex gap-1" style={{ opacity: 1 - i * 0.25 }}>
+                              {s.columns.map((col) => (
+                                <div key={col.id} className="flex-1 h-4 rounded bg-gray-200" />
+                              ))}
+                            </div>
+                          ))}
+                          {tmpl.sections.length === 0 && (
+                            <div className="text-center text-[10px] text-gray-400">空のテンプレート</div>
+                          )}
+                        </div>
+                        <div className="px-3 py-3 bg-white">
+                          <div className="flex items-center justify-between mb-0.5">
+                            <span className="text-sm font-bold text-gray-800">{tmpl.nameJa}</span>
+                            {isActive && <span className="text-xs text-cyan-600 font-semibold">✓ 選択中</span>}
+                          </div>
+                          <p className="text-xs text-gray-400">{tmpl.desc || `${tmpl.sections.length} セクション`}</p>
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Theme Gallery Modal ── */}
+      {showThemeGallery && (
+        <div className="fixed inset-0 z-[100] bg-black/75 flex items-center justify-center p-6" onClick={() => setShowThemeGallery(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+              <div>
+                <h2 className="text-base font-bold text-gray-900">テーマを選択</h2>
+                <p className="text-xs text-gray-500 mt-0.5">テーマを選んだあと「カスタマイズ」で色を調整できます</p>
+              </div>
+              <button onClick={() => setShowThemeGallery(false)} className="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>
+            </div>
+            <div className="p-6 grid grid-cols-4 gap-3">
+              {Object.entries(allThemes).map(([id, theme]) => {
+                const isActive = themeId === id
+                return (
+                  <button
+                    key={id}
+                    onClick={() => { setThemeId(id as ThemeId); setCustomTheme({}); setShowThemeGallery(false) }}
+                    className={['rounded-xl overflow-hidden border-2 transition text-left hover:shadow-md flex flex-col', isActive ? 'border-cyan-500 shadow-md' : 'border-gray-200 hover:border-gray-300'].join(' ')}
+                  >
+                    {/* Color preview strip */}
+                    <div className="flex h-7 shrink-0">
+                      <div className="flex-1" style={{ background: theme.topbarBg }} />
+                      <div className="flex-1" style={{ background: theme.headerBg }} />
+                      <div className="flex-1" style={{ background: theme.accent }} />
+                      <div className="flex-1" style={{ background: theme.footerBg }} />
+                    </div>
+                    {/* Card section - fixed height */}
+                    <div className="px-2.5 py-2 flex-1" style={{ background: theme.sectionAltBg }}>
+                      <div className="flex items-center gap-1 mb-1.5">
+                        <div className="w-3 h-3 rounded-full shrink-0" style={{ background: theme.cardIconBg, border: `2px solid ${theme.accent}` }} />
+                        <div className="h-1.5 rounded flex-1" style={{ background: theme.accent, opacity: 0.5 }} />
+                      </div>
+                      <div className="h-1.5 rounded w-3/4 mb-1" style={{ background: theme.dividerColor }} />
+                      <div className="h-1.5 rounded w-1/2" style={{ background: theme.dividerColor }} />
+                    </div>
+                    {/* Name bar */}
+                    <div className="px-2.5 py-1.5 flex items-center justify-between shrink-0" style={{ background: theme.cardBg }}>
+                      <span className="text-xs font-bold truncate" style={{ color: theme.accent }}>{theme.nameJa}</span>
+                      {isActive && <span className="text-xs text-cyan-600 shrink-0 ml-1">✓</span>}
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
