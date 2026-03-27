@@ -19,17 +19,41 @@ export default async function Header() {
     <header className="bg-white shadow-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link href="/" className="flex items-center shrink-0">
-            <Image
-              src="/bluejobs-logo.png"
-              alt="ブルージョブズ"
-              width={160}
-              height={44}
-              priority
-              className="h-9 w-auto object-contain"
-            />
-          </Link>
+          {/* Logo + optional back-to-dashboard */}
+          <div className="flex items-center gap-4 shrink-0">
+            <Link href="/" className="flex items-center">
+              <Image
+                src="/bluejobs-logo.png"
+                alt="ブルージョブズ"
+                width={160}
+                height={44}
+                priority
+                className="h-9 w-auto object-contain"
+              />
+            </Link>
+            {user?.role === 'admin' && (
+              <Link
+                href="/admin"
+                className="flex items-center gap-1 text-sm font-medium text-gray-500 hover:text-slate-800 transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+                </svg>
+                管理ダッシュボード
+              </Link>
+            )}
+            {user?.role === 'clinic' && (
+              <Link
+                href="/clinic/dashboard"
+                className="flex items-center gap-1 text-sm font-medium text-gray-500 hover:text-cyan-700 transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+                </svg>
+                クリニックダッシュボード
+              </Link>
+            )}
+          </div>
 
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-8" aria-label="メインナビゲーション">
