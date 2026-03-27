@@ -80,7 +80,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               name={user.name}
               email={user.email}
               initials={user.name.charAt(0)}
-              profileHref="/admin"
+              profileHref="#"
               avatarClass="bg-orange-100 text-orange-700"
             />
           </div>
