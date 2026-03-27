@@ -17,7 +17,7 @@ export type ActionResult = { error?: string; success?: string }
 
 // Where each role lands after login
 const ROLE_HOME: Record<UserRole, string> = {
-  seeker: '/profile',
+  seeker: '/jobs',
   clinic: '/clinic/dashboard',
   admin:  '/admin',
 }
@@ -92,7 +92,7 @@ export async function registerAction(
   appendUserToJson(newUser)   // ← persists to data/users.json
 
   await createSession(newUser.id)
-  redirect('/profile')
+  redirect('/jobs')
 }
 
 // ── Forgot password ───────────────────────────────────────────────────────────
