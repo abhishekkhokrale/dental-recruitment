@@ -1,6 +1,19 @@
 'use client'
 
+import { Template2Renderer } from './LandingPageTemplate2'
+import { Template3Renderer } from './LandingPageTemplate3'
+import { FreeTemplateRenderer } from './FreeTemplateRenderer'
+import type { FreeTemplate } from '@/lib/templateStorage'
+
 // ─── Types ──────────────────────────────────────────────────────────────────
+
+export type TemplateId = 'modern' | 'professional' | 'boutique'
+
+export const TEMPLATES: Record<TemplateId, { nameJa: string; desc: string; preview: { hero: string; feature: string; staff: string } }> = {
+  modern:       { nameJa: 'モダン',             desc: 'カード型・シンプルモダン',       preview: { hero: 'フルワイドヒーロー', feature: 'アイコンカード3列', staff: '中央カード' } },
+  professional: { nameJa: 'プロフェッショナル', desc: 'スプリット画面・コーポレート',   preview: { hero: '左テキスト+右画像', feature: '番号付き縦型', staff: '横長カード' } },
+  boutique:     { nameJa: 'ブティック',         desc: '有機的・温かみある曲線デザイン', preview: { hero: '有機形状フレーム', feature: '左ボーダーカード', staff: '円形写真' } },
+}
 
 export interface PageSection {
   id: string
@@ -75,9 +88,49 @@ export const THEMES: Record<string, LPTheme> = {
     dividerColor: '#ddd6fe', footerBg: '#18181b', footerText: '#71717a', footerBorder: '#27272a',
     badgeBg: '#ede9fe', badgeText: '#6d28d9',
   },
+  sakura: {
+    nameJa: '桜ピンク',
+    topbarBg: '#9d174d', topbarText: '#fce7f3',
+    headerBg: '#fff1f2', headerText: '#1c1917', headerBorder: '#fecdd3', logoColor: '#be185d',
+    accent: '#be185d', accentLight: '#fce7f3', accentText: '#9d174d',
+    heroBtnBg: '#be185d', heroBtnText: '#ffffff', heroBtn2Border: 'rgba(255,255,255,0.7)',
+    sectionAltBg: '#fff1f2', cardBg: '#fdf2f8', cardIconBg: '#fce7f3',
+    dividerColor: '#fbcfe8', footerBg: '#1c1917', footerText: '#a8a29e', footerBorder: '#292524',
+    badgeBg: '#fce7f3', badgeText: '#9d174d',
+  },
+  ocean: {
+    nameJa: '大海原',
+    topbarBg: '#0c4a6e', topbarText: '#bae6fd',
+    headerBg: '#f0f9ff', headerText: '#0c4a6e', headerBorder: '#bae6fd', logoColor: '#0369a1',
+    accent: '#0369a1', accentLight: '#e0f2fe', accentText: '#075985',
+    heroBtnBg: '#0369a1', heroBtnText: '#ffffff', heroBtn2Border: 'rgba(255,255,255,0.7)',
+    sectionAltBg: '#f0f9ff', cardBg: '#e0f2fe', cardIconBg: '#bae6fd',
+    dividerColor: '#7dd3fc', footerBg: '#082f49', footerText: '#7dd3fc', footerBorder: '#0c4a6e',
+    badgeBg: '#e0f2fe', badgeText: '#075985',
+  },
+  sunset: {
+    nameJa: '夕焼け',
+    topbarBg: '#9a3412', topbarText: '#fed7aa',
+    headerBg: '#fff7ed', headerText: '#1c1917', headerBorder: '#fed7aa', logoColor: '#ea580c',
+    accent: '#ea580c', accentLight: '#fff7ed', accentText: '#c2410c',
+    heroBtnBg: '#ea580c', heroBtnText: '#ffffff', heroBtn2Border: 'rgba(255,255,255,0.7)',
+    sectionAltBg: '#fff7ed', cardBg: '#ffedd5', cardIconBg: '#fed7aa',
+    dividerColor: '#fdba74', footerBg: '#1c1917', footerText: '#a8a29e', footerBorder: '#292524',
+    badgeBg: '#ffedd5', badgeText: '#c2410c',
+  },
+  monochrome: {
+    nameJa: 'モノクロ',
+    topbarBg: '#18181b', topbarText: '#d4d4d8',
+    headerBg: '#ffffff', headerText: '#18181b', headerBorder: '#e4e4e7', logoColor: '#52525b',
+    accent: '#3f3f46', accentLight: '#f4f4f5', accentText: '#27272a',
+    heroBtnBg: '#18181b', heroBtnText: '#ffffff', heroBtn2Border: 'rgba(255,255,255,0.7)',
+    sectionAltBg: '#f4f4f5', cardBg: '#fafafa', cardIconBg: '#e4e4e7',
+    dividerColor: '#d4d4d8', footerBg: '#09090b', footerText: '#71717a', footerBorder: '#18181b',
+    badgeBg: '#e4e4e7', badgeText: '#27272a',
+  },
 }
 
-export type ThemeId = keyof typeof THEMES
+export type ThemeId = string
 
 // ─── Default sections ────────────────────────────────────────────────────────
 
@@ -225,9 +278,12 @@ function HeaderSection({ c, t }: SP) {
           <span className="text-base font-bold tracking-tight" style={{ color: t.logoColor }}>{c.logoText || 'クリニック名'}</span>
         </div>
         {/* Nav */}
-        <nav className="hidden md:flex items-center gap-1">
+        <nav
+          className="header-nav hidden md:flex items-center gap-1 overflow-x-auto"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' } as React.CSSProperties}
+        >
           {navItems.map(({ label, href }: { label: string; href: string }) => (
-            <a key={label} href={href} className="px-3 py-1.5 text-sm rounded-md transition-colors hover:opacity-70" style={{ color: t.headerText }}>
+            <a key={label} href={href} className="px-3 py-1.5 text-sm rounded-md transition-colors hover:opacity-70 whitespace-nowrap shrink-0" style={{ color: t.headerText }}>
               {label}
             </a>
           ))}
@@ -567,11 +623,29 @@ function FooterSection({ c, t }: SP) {
 export function LandingPageRenderer({
   sections,
   themeId,
+  templateId = 'modern',
+  customTheme,
+  extraThemes = {},
+  freeTemplate,
 }: {
   sections: PageSection[]
   themeId: ThemeId
+  templateId?: TemplateId
+  customTheme?: Partial<LPTheme>
+  extraThemes?: Record<string, LPTheme>
+  freeTemplate?: FreeTemplate
 }) {
-  const t = THEMES[themeId] ?? THEMES.clean
+  const themeMap = { ...THEMES, ...extraThemes }
+  const t = { ...(themeMap[themeId] ?? THEMES.clean), ...customTheme }
+
+  if (templateId.startsWith('free_') && freeTemplate) {
+    return <FreeTemplateRenderer template={freeTemplate} sections={sections} t={t} />
+  }
+
+  if (templateId === 'professional') return <Template2Renderer sections={sections} t={t} />
+  if (templateId === 'boutique')     return <Template3Renderer sections={sections} t={t} />
+
+  // Default: Modern (Template 1)
   return (
     <div className="font-sans antialiased text-gray-800 bg-white">
       {sections.filter(s => s.visible).map(s => {
