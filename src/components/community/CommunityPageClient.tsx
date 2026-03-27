@@ -1,17 +1,16 @@
 'use client'
 
 import { useState } from 'react'
-import type { CommunityPost } from '@/lib/mock-data/community'
-import { mockCurrentUser } from '@/lib/mock-data/community'
+import type { CommunityPost, CommunityAuthor } from '@/lib/mock-data/community'
 import CommunityFeed, { type SortType } from './CommunityFeed'
 import NewPostModal from './NewPostModal'
-import TrendingCarousel from './TrendingCarousel'
 
 interface CommunityPageClientProps {
   initialPosts: CommunityPost[]
+  currentAuthor: CommunityAuthor
 }
 
-export default function CommunityPageClient({ initialPosts }: CommunityPageClientProps) {
+export default function CommunityPageClient({ initialPosts, currentAuthor }: CommunityPageClientProps) {
   const [posts, setPosts] = useState<CommunityPost[]>(initialPosts)
   const [modalOpen, setModalOpen] = useState(false)
   const [sort, setSort] = useState<SortType>('hot')
@@ -23,13 +22,10 @@ export default function CommunityPageClient({ initialPosts }: CommunityPageClien
 
   return (
     <>
-      {/* Trending carousel */}
-      <TrendingCarousel />
-
       {/* Create post bar */}
       <div className="bg-white border border-gray-200 rounded-md p-2 flex items-center gap-2 mb-3">
         <div className="w-8 h-8 rounded-full bg-linear-to-br from-cyan-400 to-indigo-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
-          {mockCurrentUser.name.charAt(0)}
+          {currentAuthor.name.charAt(0)}
         </div>
         <button
           type="button"
@@ -70,6 +66,7 @@ export default function CommunityPageClient({ initialPosts }: CommunityPageClien
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         onNewPost={handleNewPost}
+        currentAuthor={currentAuthor}
       />
     </>
   )

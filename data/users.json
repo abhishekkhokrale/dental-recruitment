@@ -4,21 +4,48 @@
     "name": "管理者",
     "email": "admin@bluejobs.jp",
     "password": "admin1234",
-    "role": "admin"
+    "role": "admin",
+    "prefecture": "",
+    "qualifications": [],
+    "experienceYears": 0,
+    "employmentTypes": [],
+    "desiredSalaryMin": null,
+    "bio": "",
+    "provider": "email",
+    "lineId": null,
+    "createdAt": "2025-01-01T00:00:00.000Z"
   },
   {
     "id": "clinic-001",
     "name": "スマイル歯科クリニック",
     "email": "clinic@bluejobs.jp",
     "password": "clinic1234",
-    "role": "clinic"
+    "role": "clinic",
+    "prefecture": "東京都",
+    "qualifications": [],
+    "experienceYears": 0,
+    "employmentTypes": [],
+    "desiredSalaryMin": null,
+    "bio": "",
+    "provider": "email",
+    "lineId": null,
+    "createdAt": "2025-01-01T00:00:00.000Z"
   },
   {
     "id": "seeker-001",
     "name": "山田 花子",
     "email": "seeker@bluejobs.jp",
     "password": "seeker1234",
-    "role": "seeker"
+    "role": "seeker",
+    "prefecture": "東京都",
+    "qualifications": ["歯科衛生士"],
+    "experienceYears": 5,
+    "employmentTypes": ["正社員"],
+    "desiredSalaryMin": 250000,
+    "bio": "歯科衛生士として5年間、予防歯科に力を入れたクリニックで勤務してきました。",
+    "provider": "email",
+    "lineId": null,
+    "createdAt": "2025-04-01T00:00:00.000Z"
   },
   {
     "id": "6074808746d681b1",
@@ -26,6 +53,14 @@
     "email": "abhishek.fidel@gmail.com",
     "passwordHash": "d6845bb037f194fcbb46d7cb440a68a0:345369b8d122ced86d1f4daf1712d02404afdf18f330557f102d68f74003ba714b71010b6ea72bea03e05ba0c9ac7b083ff00ce822f491cfce6820ad8baa8201",
     "role": "seeker",
+    "prefecture": "",
+    "qualifications": ["歯科衛生士"],
+    "experienceYears": 0,
+    "employmentTypes": [],
+    "desiredSalaryMin": null,
+    "bio": "",
+    "provider": "email",
+    "lineId": null,
     "createdAt": "2026-03-23T09:43:28.901Z"
   },
   {
@@ -34,6 +69,14 @@
     "email": "rahul.fidel@gmail.com",
     "passwordHash": "a391eeca985fd18e6d89dd9ca994926c:18f90231dbbbfa54185a60e348a8d3e992e557976de8bcf3357b6f6a0ec35f3f76413db9685a1d6b9f33726c6f1051614bc4aecc30d91ab9b4342929e78e1870",
     "role": "seeker",
-    "createdAt": "2026-03-25T10:40:31.302Z"
+    "prefecture": "東京都",
+    "qualifications": ["歯科衛生士"],
+    "experienceYears": 5,
+    "employmentTypes": ["正社員"],
+    "desiredSalaryMin": 250000,
+    "bio": "歯科衛生士として5年間、予防歯科に力を入れたクリニックで勤務してきました。",
+    "provider": "email",
+    "lineId": null,
+    "createdAt": "2026-03-25T10:40:31.202Z"
   }
 ]

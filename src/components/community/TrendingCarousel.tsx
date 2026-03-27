@@ -1,69 +1,8 @@
 'use client'
 
 import { useRef, useState, useEffect, useCallback } from 'react'
-
-const TRENDING = [
-  {
-    id: 't1',
-    title: 'フルマウスリハビリの最新アプローチ',
-    desc: '重度咬耗患者へのジルコニアクラウン全顎適用',
-    group: '補綴科',
-    bgFrom: '#1e1b4b',
-    bgTo: '#312e81',
-    accent: '#818cf8',
-    icon: '🦷',
-    avatar: '🦷',
-    comments: 23,
-  },
-  {
-    id: 't2',
-    title: '辞めないスタッフチームの作り方',
-    desc: '離職率40%を10%未満にした実践的な取り組み',
-    group: 'クリニックオーナー',
-    bgFrom: '#0c4a6e',
-    bgTo: '#0369a1',
-    accent: '#38bdf8',
-    icon: '🏥',
-    avatar: '🏥',
-    comments: 67,
-  },
-  {
-    id: 't3',
-    title: 'マウスピース矯正の適応基準を見直す',
-    desc: '成人患者でNOと言うべきケースの見極め方',
-    group: '矯正科',
-    bgFrom: '#4a0519',
-    bgTo: '#9f1239',
-    accent: '#fb7185',
-    icon: '😁',
-    avatar: '😁',
-    comments: 56,
-  },
-  {
-    id: 't4',
-    title: 'CAD/CAMとハンドスキルの両立',
-    desc: 'テクノロジー時代に職人技を磨く理由',
-    group: '歯科技工士',
-    bgFrom: '#431407',
-    bgTo: '#9a3412',
-    accent: '#fb923c',
-    icon: '⚙️',
-    avatar: '⚙️',
-    comments: 38,
-  },
-  {
-    id: 't5',
-    title: '小児歯科における行動管理の最前線',
-    desc: '非協力的な幼児への最新アプローチとSDF活用法',
-    group: '小児歯科',
-    bgFrom: '#052e16',
-    bgTo: '#166534',
-    accent: '#4ade80',
-    icon: '👶',
-    avatar: '👶',
-    comments: 29,
-  },
-]
+import Link from 'next/link'
+import { trendingPosts } from '@/lib/mock-data/community'
 
 export default function TrendingCarousel() {
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -123,10 +62,10 @@ export default function TrendingCarousel() {
         className="flex gap-2 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-1"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
-        {TRENDING.map((item) => (
-          <button
+        {trendingPosts.map((item) => (
+          <Link
             key={item.id}
-            type="button"
+            href={`/community/posts/${item.id}`}
             className="relative shrink-0 snap-start w-[calc(33.33%-6px)] min-w-64 h-52 rounded-xl overflow-hidden text-white text-left group cursor-pointer shadow-md hover:shadow-2xl hover:scale-[1.01] transition-all duration-200"
             style={{ background: `linear-gradient(135deg, ${item.bgFrom} 0%, ${item.bgTo} 100%)` }}
           >
@@ -155,7 +94,6 @@ export default function TrendingCarousel() {
                   {item.avatar}
                 </div>
                 <span className="text-xs font-semibold text-white/90">{item.group}</span>
-                <span className="text-xs text-white/50 ml-auto">and more</span>
               </div>
               <p className="font-bold text-sm leading-snug line-clamp-2 text-white drop-shadow">
                 {item.title}
@@ -164,7 +102,7 @@ export default function TrendingCarousel() {
                 {item.desc}
               </p>
             </div>
-          </button>
+          </Link>
         ))}
       </div>
 
